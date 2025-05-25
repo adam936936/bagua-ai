@@ -1,0 +1,8 @@
+30429:C 25 May 2025 23:53:13.332 * oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+30429:C 25 May 2025 23:53:13.333 * Redis version=8.0.1, bits=64, commit=00000000, modified=1, pid=30429, just started
+30429:C 25 May 2025 23:53:13.333 # Warning: no config file specified, using the default config. In order to specify a config file use redis-server /path/to/redis.conf
+30429:M 25 May 2025 23:53:13.333 * monotonic clock: POSIX clock_gettime
+30429:M 25 May 2025 23:53:13.333 * Running mode=standalone, port=6379.
+30429:M 25 May 2025 23:53:13.333 # WARNING: The TCP backlog setting of 511 cannot be enforced because kern.ipc.somaxconn is set to the lower value of 128.
+30429:M 25 May 2025 23:53:13.339 # Warning: Could not create server TCP listening socket *:6379: bind: Address already in use
+30429:M 25 May 2025 23:53:13.339 # Failed listening on port 6379 (tcp), aborting.

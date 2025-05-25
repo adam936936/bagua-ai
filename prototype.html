@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI八卦运势小程序原型</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif;
+      background: #f8f8f8 url('https://img.zcool.cn/community/01b2e95c6e2e6fa801216518a2e2e2.jpg') no-repeat center bottom/cover;
+      min-height: 100vh;
+    }
+    .app-bar {
+      background: linear-gradient(90deg, #2ecc71 60%, #b7e2c6 100%);
+      color: #fff;
+      padding: 1.2em 0 1em 0;
+      text-align: center;
+      font-size: 1.5em;
+      letter-spacing: 0.15em;
+      font-weight: bold;
+      box-shadow: 0 2px 12px rgba(46,204,113,0.08);
+      border-bottom-left-radius: 18px;
+      border-bottom-right-radius: 18px;
+      position: relative;
+    }
+    .vip-badge {
+      position: absolute;
+      right: 1em;
+      top: 50%;
+      transform: translateY(-50%);
+      background: #ffd700;
+      color: #333;
+      padding: 0.3em 0.8em;
+      border-radius: 15px;
+      font-size: 0.7em;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .container {
+      max-width: 420px;
+      margin: 3em auto 2em auto;
+      background: rgba(255,255,255,0.97);
+      border-radius: 24px;
+      box-shadow: 0 8px 32px rgba(46,204,113,0.10);
+      padding: 2.5em 2em 2.5em 2em;
+      min-height: 480px;
+      position: relative;
+    }
+    .main-btn {
+      display: block;
+      width: 100%;
+      background: linear-gradient(90deg, #2ecc71 60%, #b7e2c6 100%);
+      color: #fff;
+      border: none;
+      border-radius: 30px;
+      font-size: 1.25em;
+      padding: 1em 0;
+      margin: 2.5em 0 0 0;
+      cursor: pointer;
+      font-weight: bold;
+      letter-spacing: 0.1em;
+      transition: background 0.2s;
+      box-shadow: 0 4px 16px rgba(46,204,113,0.10);
+    }
+    .main-btn:hover {
+      background: #27ae60;
+    }
+    .section-title {
+      font-size: 1.35em;
+      font-weight: bold;
+      margin-bottom: 0.7em;
+      letter-spacing: 0.05em;
+      color: #222;
+      text-align: center;
+    }
+    .desc {
+      color: #666;
+      font-size: 1.08em;
+      margin-bottom: 2em;
+      text-align: center;
+    }
+    .fortune-block {
+      background: linear-gradient(90deg, #f8fff8 60%, #e6f9f0 100%);
+      border-radius: 16px;
+      padding: 1.2em 1em 1em 1em;
+      margin-bottom: 2em;
+      box-shadow: 0 2px 8px rgba(46,204,113,0.06);
+      text-align: center;
+    }
+    .fortune-title {
+      color: #27ae60;
+      font-weight: bold;
+      font-size: 1.1em;
+      margin-bottom: 0.5em;
+      letter-spacing: 0.05em;
+    }
+    .fortune-content {
+      color: #555;
+      font-size: 1em;
+    }
+    .ad-banner {
+      background: linear-gradient(90deg, #fff3cd 60%, #ffeaa7 100%);
+      border-radius: 12px;
+      padding: 0.8em 1em;
+      margin-bottom: 1.5em;
+      text-align: center;
+      border: 1px solid #ffeaa7;
+      cursor: pointer;
+    }
+    .ad-text {
+      color: #856404;
+      font-size: 0.9em;
+      margin-bottom: 0.3em;
+    }
+    .ad-link {
+      color: #d63031;
+      font-weight: bold;
+      font-size: 0.85em;
+    }
+    .input-group {
+      margin-bottom: 1.7em;
+    }
+    .input-label {
+      display: block;
+      margin-bottom: 0.5em;
+      color: #444;
+      font-size: 1.05em;
+      font-weight: 500;
+    }
+    .input-field, select {
+      width: 100%;
+      padding: 0.8em;
+      border: 1px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 1.05em;
+      background: #fafafa;
+      margin-bottom: 0.2em;
+    }
+    .result-block {
+      background: linear-gradient(90deg, #f4f9f4 60%, #e6f9f0 100%);
+      border-radius: 16px;
+      padding: 1.3em 1.1em 1.1em 1.1em;
+      margin-bottom: 1.5em;
+      box-shadow: 0 2px 8px rgba(46,204,113,0.06);
+    }
+    .result-title {
+      font-weight: bold;
+      color: #27ae60;
+      margin-bottom: 0.5em;
+      font-size: 1.08em;
+    }
+    .ai-section {
+      background: #fffbe6;
+      border-left: 4px solid #2ecc71;
+      border-radius: 10px;
+      padding: 1.1em 1em 1em 1em;
+      margin-bottom: 1.2em;
+      font-size: 1.05em;
+      color: #7a5c1e;
+      position: relative;
+    }
+    .ai-section .fa-robot {
+      color: #2ecc71;
+      margin-right: 0.5em;
+    }
+    .wuxing-name-block {
+      background: #e6f9f0;
+      border-radius: 8px;
+      padding: 0.7em 1em;
+      margin-top: 0.7em;
+      color: #1a6b4b;
+      font-size: 1em;
+      text-align: center;
+    }
+    .name-recommend-block {
+      background: linear-gradient(90deg, #fff9e6 60%, #ffeaa7 100%);
+      border-radius: 12px;
+      padding: 1.2em 1em;
+      margin-bottom: 1.5em;
+      box-shadow: 0 2px 8px rgba(255,193,7,0.06);
+      position: relative;
+    }
+    .name-recommend-title {
+      color: #d68910;
+      font-weight: bold;
+      font-size: 1.08em;
+      margin-bottom: 0.8em;
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+    }
+    .name-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8em;
+    }
+    .name-item {
+      background: #fff;
+      border-radius: 8px;
+      padding: 0.8em 1em;
+      border: 1px solid #ffeaa7;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .name-text {
+      color: #333;
+      font-weight: 500;
+    }
+    .name-reason {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.3em;
+    }
+    .premium-lock {
+      background: rgba(255,255,255,0.9);
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      backdrop-filter: blur(3px);
+    }
+    .lock-icon {
+      color: #ffd700;
+      font-size: 2em;
+      margin-bottom: 0.5em;
+    }
+    .unlock-btn {
+      background: #ffd700;
+      color: #333;
+      border: none;
+      border-radius: 20px;
+      padding: 0.6em 1.5em;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 0.5em;
+    }
+    .action-row {
+      display: flex;
+      gap: 1.2em;
+      margin-top: 2em;
+      justify-content: center;
+    }
+    .action-btn {
+      background: #fff;
+      border: 1.5px solid #2ecc71;
+      color: #2ecc71;
+      border-radius: 22px;
+      padding: 0.6em 1.4em;
+      font-size: 1.05em;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+      font-weight: 500;
+    }
+    .action-btn:hover {
+      background: #2ecc71;
+      color: #fff;
+    }
+    .premium-btn {
+      background: #ffd700;
+      border: 1.5px solid #ffd700;
+      color: #333;
+    }
+    .premium-btn:hover {
+      background: #ffed4e;
+    }
+    .back-btn {
+      position: absolute;
+      left: 1em;
+      top: 1em;
+      background: none;
+      border: none;
+      color: #2ecc71;
+      font-size: 1.3em;
+      cursor: pointer;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background: #fff;
+      border-radius: 16px;
+      padding: 2em;
+      max-width: 350px;
+      margin: 1em;
+      text-align: center;
+    }
+    .modal-title {
+      font-size: 1.3em;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 1em;
+    }
+    .price-list {
+      margin: 1.5em 0;
+    }
+    .price-item {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 1em;
+      margin-bottom: 0.8em;
+      border: 2px solid transparent;
+      cursor: pointer;
+    }
+    .price-item.selected {
+      border-color: #2ecc71;
+      background: #f0f9ff;
+    }
+    .price-title {
+      font-weight: bold;
+      color: #333;
+    }
+    .price-desc {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.3em;
+    }
+    .modal-buttons {
+      display: flex;
+      gap: 1em;
+      margin-top: 1.5em;
+    }
+    .modal-btn {
+      flex: 1;
+      padding: 0.8em;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .modal-btn.primary {
+      background: #2ecc71;
+      color: #fff;
+    }
+    .modal-btn.secondary {
+      background: #e9ecef;
+      color: #333;
+    }
+    @media (max-width: 500px) {
+      .container { max-width: 98vw; padding: 1em 0.5em 2em 0.5em; }
+      .app-bar { font-size: 1.1em; padding: 1em 0 0.7em 0; }
+    }
+  </style>
+</head>
+<body>
+  <!-- 首页 -->
+  <div class="app-bar">
+    AI八卦运势
+    <div class="vip-badge" onclick="showVipModal()"><i class="fa fa-crown"></i> VIP</div>
+  </div>
+  <div class="container" id="home-page">
+    <div class="section-title">阳历-农历</div>
+    <div class="desc">天干、地支，一键计算。</div>
+    <div class="fortune-block">
+      <div class="fortune-title"><i class="fa fa-sun"></i> 今日运势</div>
+      <div class="fortune-content" id="today-fortune">今日宜静心养性，顺势而为，贵人相助，诸事顺利。</div>
+    </div>
+    <div class="ad-banner" onclick="alert('广告跳转')">
+      <div class="ad-text">🎯 精准起名，改变命运</div>
+      <div class="ad-link">点击了解专业起名服务 ></div>
+    </div>
+    <button class="main-btn" onclick="showPage('input-page')"><i class="fa fa-calculator"></i> 开始计算</button>
+  </div>
+
+  <!-- 信息输入页 -->
+  <div class="container" id="input-page" style="display:none; position:relative;">
+    <button class="back-btn" onclick="showPage('home-page')"><i class="fa fa-arrow-left"></i></button>
+    <div class="section-title">请填写出生信息</div>
+    <form id="birth-form" onsubmit="event.preventDefault(); showPage('result-page'); fillResult();">
+      <div class="input-group">
+        <label class="input-label" for="birth-date">出生日期（阳历）</label>
+        <input class="input-field" type="date" id="birth-date" name="birth-date" required value="2000-01-01">
+      </div>
+      <div class="input-group">
+        <label class="input-label" for="birth-time">出生时辰</label>
+        <select class="input-field" id="birth-time" name="birth-time" required>
+          <option value="子时">子时 (23:00-00:59)</option>
+          <option value="丑时">丑时 (01:00-02:59)</option>
+          <option value="寅时">寅时 (03:00-04:59)</option>
+          <option value="卯时">卯时 (05:00-06:59)</option>
+          <option value="辰时">辰时 (07:00-08:59)</option>
+          <option value="巳时">巳时 (09:00-10:59)</option>
+          <option value="午时">午时 (11:00-12:59)</option>
+          <option value="未时">未时 (13:00-14:59)</option>
+          <option value="申时">申时 (15:00-16:59)</option>
+          <option value="酉时">酉时 (17:00-18:59)</option>
+          <option value="戌时">戌时 (19:00-20:59)</option>
+          <option value="亥时">亥时 (21:00-22:59)</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label class="input-label" for="user-name">姓名（可选）</label>
+        <input class="input-field" type="text" id="user-name" name="user-name" placeholder="请输入姓名，用于五行弥补分析">
+      </div>
+      <button class="main-btn" type="submit"><i class="fa fa-magic"></i> 计算</button>
+    </form>
+  </div>
+
+  <!-- 结果页 -->
+  <div class="container" id="result-page" style="display:none; position:relative;">
+    <button class="back-btn" onclick="showPage('input-page')"><i class="fa fa-arrow-left"></i></button>
+    <div class="section-title">分析结果</div>
+    <div class="result-block">
+      <div class="result-title">基础信息</div>
+      <div id="result-birth-date">阳历：2000-01-01</div>
+      <div id="result-birth-time">时辰：未时 (13:00-14:59)</div>
+      <div id="result-lunar">农历：——</div>
+      <div id="result-ganzhi">天干地支：——</div>
+      <div id="result-shengxiao">生肖：——</div>
+    </div>
+    <div class="result-block">
+      <div class="result-title">五行分析</div>
+      <div id="result-wuxing">五行：——</div>
+      <div id="result-wuxing-lack">五行缺失：——</div>
+      <div class="wuxing-name-block" id="result-wuxing-name">姓名五行分析：——</div>
+    </div>
+    <div class="name-recommend-block">
+      <div class="name-recommend-title">
+        <i class="fa fa-sparkles"></i>
+        AI推荐姓名（基于五行弥补）
+      </div>
+      <div class="name-list" id="name-recommendations">
+        <div class="name-item">
+          <div>
+            <div class="name-text">李泽润</div>
+            <div class="name-reason">水木组合，弥补缺水，寓意润泽万物</div>
+          </div>
+        </div>
+        <div class="name-item">
+          <div>
+            <div class="name-text">王金瑞</div>
+            <div class="name-reason">金金组合，补足缺金，寓意吉祥如意</div>
+          </div>
+        </div>
+        <div class="name-item">
+          <div>
+            <div class="name-text">张水清</div>
+            <div class="name-reason">水水组合，强化水元素，寓意清澈纯净</div>
+          </div>
+        </div>
+      </div>
+      <div class="premium-lock" id="name-lock" style="display:none;">
+        <i class="fa fa-lock lock-icon"></i>
+        <div>解锁AI推荐姓名</div>
+        <button class="unlock-btn" onclick="showVipModal()">开通会员</button>
+      </div>
+    </div>
+    <div class="ai-section">
+      <i class="fa fa-robot"></i><b>AI命理解读</b>
+      <div id="result-ai">（此处展示AI生成的命理解读内容...）</div>
+    </div>
+    <div class="action-row">
+      <button class="action-btn" onclick="alert('已保存！')"><i class="fa fa-save"></i> 保存</button>
+      <button class="action-btn" onclick="alert('已分享！')"><i class="fa fa-share-alt"></i> 分享</button>
+      <button class="action-btn premium-btn" onclick="showVipModal()"><i class="fa fa-crown"></i> 升级</button>
+      <button class="action-btn" onclick="showPage('home-page')"><i class="fa fa-home"></i> 首页</button>
+    </div>
+  </div>
+
+  <!-- VIP会员弹窗 -->
+  <div class="modal" id="vip-modal">
+    <div class="modal-content">
+      <div class="modal-title"><i class="fa fa-crown" style="color:#ffd700;"></i> 开通VIP会员</div>
+      <div class="price-list">
+        <div class="price-item selected" onclick="selectPrice(this)">
+          <div class="price-title">月度会员 - ¥19.9</div>
+          <div class="price-desc">AI推荐姓名、详细运势、专属客服</div>
+        </div>
+        <div class="price-item" onclick="selectPrice(this)">
+          <div class="price-title">年度会员 - ¥199 <span style="color:#e74c3c;">省40%</span></div>
+          <div class="price-desc">全部功能 + 专业命理师咨询 + 每日运势推送</div>
+        </div>
+        <div class="price-item" onclick="selectPrice(this)">
+          <div class="price-title">单次解锁 - ¥9.9</div>
+          <div class="price-desc">仅本次AI推荐姓名功能</div>
+        </div>
+      </div>
+      <div class="modal-buttons">
+        <button class="modal-btn secondary" onclick="hideVipModal()">取消</button>
+        <button class="modal-btn primary" onclick="purchaseVip()">立即开通</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let isVip = false; // 模拟VIP状态
+
+    function showPage(pageId) {
+      document.getElementById('home-page').style.display = 'none';
+      document.getElementById('input-page').style.display = 'none';
+      document.getElementById('result-page').style.display = 'none';
+      document.getElementById(pageId).style.display = '';
+    }
+
+    function showVipModal() {
+      document.getElementById('vip-modal').style.display = 'flex';
+    }
+
+    function hideVipModal() {
+      document.getElementById('vip-modal').style.display = 'none';
+    }
+
+    function selectPrice(element) {
+      document.querySelectorAll('.price-item').forEach(item => {
+        item.classList.remove('selected');
+      });
+      element.classList.add('selected');
+    }
+
+    function purchaseVip() {
+      alert('支付成功！已开通VIP会员');
+      isVip = true;
+      document.getElementById('name-lock').style.display = 'none';
+      hideVipModal();
+    }
+
+    // 模拟调用DeepSeek API推荐姓名
+    async function getNameRecommendations(birthInfo, wuxingLack) {
+      // 实际开发时这里调用DeepSeek API
+      const prompt = `根据生辰八字五行缺失情况：${wuxingLack}，请推荐3个适合的中文姓名，要求：1.能弥补五行缺失 2.寓意吉祥 3.朗朗上口。请返回JSON格式：[{"name":"姓名","reason":"推荐理由"}]`;
+      
+      // 模拟API响应
+      return new Promise(resolve => {
+        setTimeout(() => {
+          resolve([
+            {"name": "李泽润", "reason": "水木组合，弥补缺水，寓意润泽万物"},
+            {"name": "王金瑞", "reason": "金金组合，补足缺金，寓意吉祥如意"},
+            {"name": "张水清", "reason": "水水组合，强化水元素，寓意清澈纯净"}
+          ]);
+        }, 1000);
+      });
+    }
+
+    // 简单模拟命理计算和AI解读
+    async function fillResult() {
+      const date = document.getElementById('birth-date').value;
+      const time = document.getElementById('birth-time').options[document.getElementById('birth-time').selectedIndex].text;
+      const name = document.getElementById('user-name').value.trim();
+      
+      document.getElementById('result-birth-date').innerText = '阳历：' + date;
+      document.getElementById('result-birth-time').innerText = '时辰：' + time;
+      
+      // 以下为占位，实际开发时用真实算法/接口替换
+      document.getElementById('result-lunar').innerText = '农历：1999年腊月廿五';
+      document.getElementById('result-ganzhi').innerText = '天干地支：己卯年 丁丑月 甲子日 未时';
+      document.getElementById('result-shengxiao').innerText = '生肖：兔';
+      document.getElementById('result-wuxing').innerText = '五行：木木火土';
+      document.getElementById('result-wuxing-lack').innerText = '五行缺失：金、水';
+      
+      // 姓名五行弥补分析
+      if(name) {
+        document.getElementById('result-wuxing-name').innerText = '姓名"' + name + '"五行属水，部分弥补了八字缺水，建议加强金元素。';
+      } else {
+        document.getElementById('result-wuxing-name').innerText = '未输入姓名，无法分析姓名五行弥补情况。';
+      }
+      
+      // AI推荐姓名（VIP功能）
+      if (!isVip) {
+        document.getElementById('name-lock').style.display = 'flex';
+      } else {
+        const recommendations = await getNameRecommendations({date, time}, '金、水');
+        updateNameRecommendations(recommendations);
+      }
+      
+      document.getElementById('result-ai').innerText = '您的八字五行偏木火，适合从事与木、火相关的行业。性格积极，适应力强，注意调节情绪，补足金水能量有助于事业与健康。';
+    }
+
+    function updateNameRecommendations(recommendations) {
+      const container = document.getElementById('name-recommendations');
+      container.innerHTML = '';
+      recommendations.forEach(item => {
+        const nameItem = document.createElement('div');
+        nameItem.className = 'name-item';
+        nameItem.innerHTML = `
+          <div>
+            <div class="name-text">${item.name}</div>
+            <div class="name-reason">${item.reason}</div>
+          </div>
+        `;
+        container.appendChild(nameItem);
+      });
+    }
+  </script>
+</body>
+</html> 
