@@ -4,7 +4,11 @@
 
 # 设置环境变量
 export JAVA_HOME="/opt/homebrew/Cellar/openjdk@17/17.0.15/libexec/openjdk.jdk/Contents/Home"
-export PATH="$JAVA_HOME/bin:$PATH"
+export PATH="/opt/homebrew/bin:$JAVA_HOME/bin:$PATH"
+
+# 设置Homebrew镜像源（解决网络问题）
+export HOMEBREW_API_DOMAIN="https://mirrors.tuna.tsinghua.edu.cn/homebrew-bottles/api"
+export HOMEBREW_BOTTLE_DOMAIN="https://mirrors.tuna.tsinghua.edu.cn/homebrew-bottles"
 
 # 获取环境参数，默认为dev
 PROFILE=${1:-dev}
@@ -40,9 +44,9 @@ if [ "$PROFILE" = "prod" ]; then
         sleep 3
         
         # 验证MySQL连接
-        if ! mysql -u root -p123456 -e "SELECT 1;" 2>/dev/null; then
-            echo "❌ MySQL连接失败，请检查密码或手动启动MySQL"
-            echo "💡 提示: 运行 'mysql -u root -p' 测试连接"
+        if ! mysql -u root -e "SELECT 1;" 2>/dev/null; then
+            echo "❌ MySQL连接失败，请检查MySQL服务状态"
+            echo "💡 提示: 运行 'mysql -u root' 测试连接"
             exit 1
         fi
         echo "✅ MySQL服务已启动"
@@ -51,9 +55,9 @@ if [ "$PROFILE" = "prod" ]; then
     fi
     
     # 检查数据库是否存在
-    if ! mysql -u root -p123456 -e "USE fortune_db;" 2>/dev/null; then
+    if ! mysql -u root -e "USE fortune_db;" 2>/dev/null; then
         echo "🔧 创建数据库和用户..."
-        mysql -u root -p123456 << EOF
+        mysql -u root << EOF
 CREATE DATABASE IF NOT EXISTS fortune_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE USER IF NOT EXISTS 'fortune_user'@'localhost' IDENTIFIED BY 'fortune_password_2024';
 GRANT ALL PRIVILEGES ON fortune_db.* TO 'fortune_user'@'localhost';
@@ -113,9 +117,17 @@ sleep 10
 if ps -p $APP_PID > /dev/null; then
     echo "🎉 服务启动成功！"
     echo "================================================"
-    echo "🌐 访问地址: http://localhost:8080"
-    echo "📊 健康检查: http://localhost:8080/actuator/health"
-    echo "🔮 今日运势: http://localhost:8080/api/fortune/today-fortune"
+    
+    # 根据环境设置端口
+    if [ "$PROFILE" = "prod" ]; then
+        PORT=8081
+    else
+        PORT=8080
+    fi
+    
+    echo "🌐 访问地址: http://localhost:$PORT"
+    echo "📊 健康检查: http://localhost:$PORT/actuator/health"
+    echo "🔮 今日运势: http://localhost:$PORT/api/fortune/today-fortune"
     
     if [ "$PROFILE" = "dev" ]; then
         echo "🗄️  H2控制台: http://localhost:8080/h2-console"

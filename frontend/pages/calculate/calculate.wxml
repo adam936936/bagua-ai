@@ -1,0 +1,63 @@
+<view class="container">
+  <view class="header">
+    <text class="title">个性分析</text>
+    <text class="subtitle">基于AI技术的个性特征分析</text>
+  </view>
+  
+  <view class="form-card">
+    <view class="form-section">
+      <text class="section-title">基本信息</text>
+      
+      <view class="form-item">
+        <text class="label">姓名</text>
+        <input class="input" value="{{formData.userName}}" placeholder="请输入您的姓名" bindinput="onNameInput" />
+      </view>
+      
+      <view class="form-item">
+        <text class="label">出生日期</text>
+        <picker mode="date" value="{{formData.birthDate}}" bindchange="onDateChange">
+          <view class="picker">
+            {{formData.birthDate || '请选择出生日期'}}
+          </view>
+        </picker>
+      </view>
+      
+      <view class="form-item">
+        <text class="label">出生时辰</text>
+        <picker range="{{timeOptions}}" value="{{timeIndex}}" bindchange="onTimeChange">
+          <view class="picker">
+            {{timeOptions[timeIndex] || '请选择出生时辰'}}
+          </view>
+        </picker>
+      </view>
+    </view>
+    
+    <button class="calculate-btn" bindtap="onCalculate" disabled="{{!canCalculate || loading}}">
+      {{loading ? '分析中...' : '开始分析'}}
+    </button>
+  </view>
+  
+  <view class="result-card" wx:if="{{result}}">
+    <view class="result-header">
+      <text class="result-title">分析结果</text>
+    </view>
+    
+    <view class="result-content">
+      <view class="basic-info">
+        <view class="info-item">
+          <text class="info-label">农历</text>
+          <text class="info-value">{{result.lunar}}</text>
+        </view>
+        <view class="info-item">
+          <text class="info-label">生肖</text>
+          <text class="info-value">{{result.shengXiao}}</text>
+        </view>
+      </view>
+      
+      <view class="analysis-section">
+        <text class="analysis-title">AI分析报告</text>
+        <text class="analysis-text">{{result.aiAnalysis}}</text>
+      </view>
+    </view>
+  </view>
+</view> 

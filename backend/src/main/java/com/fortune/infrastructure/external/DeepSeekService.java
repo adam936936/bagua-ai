@@ -213,8 +213,12 @@ public class DeepSeekService {
      */
     private List<NameRecommendationResponse> parseNameRecommendations(String response) {
         try {
+            // 清理响应文本，提取JSON部分
+            String cleanedResponse = cleanJsonResponse(response);
+            log.info("清理后的JSON响应: {}", cleanedResponse);
+            
             // 尝试解析JSON格式的响应
-            JSONArray jsonArray = JSON.parseArray(response);
+            JSONArray jsonArray = JSON.parseArray(cleanedResponse);
             List<NameRecommendationResponse> recommendations = new ArrayList<>();
             
             for (int i = 0; i < jsonArray.size(); i++) {
@@ -233,6 +237,35 @@ public class DeepSeekService {
             log.warn("解析姓名推荐响应失败，使用默认解析", e);
             return parseNameRecommendationsFromText(response);
         }
+    }
+    
+    /**
+     * 清理JSON响应，提取有效的JSON部分
+     */
+    private String cleanJsonResponse(String response) {
+        if (response == null || response.trim().isEmpty()) {
+            return "[]";
+        }
+        
+        // 移除markdown代码块标记
+        String cleaned = response.replaceAll("```json\\s*", "").replaceAll("```\\s*", "");
+        
+        // 查找JSON数组的开始和结束位置
+        int startIndex = cleaned.indexOf('[');
+        int endIndex = cleaned.lastIndexOf(']');
+        
+        if (startIndex != -1 && endIndex != -1 && endIndex > startIndex) {
+            cleaned = cleaned.substring(startIndex, endIndex + 1);
+        }
+        
+        // 移除多余的空白字符和换行符
+        cleaned = cleaned.replaceAll("\\s+", " ").trim();
+        
+        // 修复常见的JSON格式问题
+        cleaned = cleaned.replaceAll(",\\s*}", "}"); // 移除对象末尾多余的逗号
+        cleaned = cleaned.replaceAll(",\\s*]", "]");  // 移除数组末尾多余的逗号
+        
+        return cleaned;
     }
     
     /**

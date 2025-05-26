@@ -1,4 +1,5 @@
 com/fortune/application/service/FortuneApplicationService.class
+com/fortune/infrastructure/config/WebConfig.class
 com/fortune/FortuneMiniAppApplication.class
 com/fortune/domain/shared/valueobject/BaseId.class
 com/fortune/domain/fortune/valueobject/BirthInfo.class

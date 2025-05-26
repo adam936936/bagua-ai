@@ -1,0 +1,46 @@
+<view class="container">
+  <view class="header">
+    <text class="title">快速分析</text>
+    <text class="subtitle">简单输入，快速获得AI分析结果</text>
+  </view>
+  
+  <view class="form-card">
+    <view class="form-item">
+      <text class="label">姓名</text>
+      <input class="input" value="{{formData.userName}}" placeholder="请输入您的姓名" bindinput="onNameInput" />
+    </view>
+    
+    <view class="form-item">
+      <text class="label">出生日期</text>
+      <picker mode="date" value="{{formData.birthDate}}" bindchange="onDateChange">
+        <view class="picker">
+          {{formData.birthDate || '请选择出生日期'}}
+        </view>
+      </picker>
+    </view>
+    
+    <view class="form-item">
+      <text class="label">出生时辰</text>
+      <picker range="{{timeOptions}}" value="{{timeIndex}}" bindchange="onTimeChange">
+        <view class="picker">
+          {{timeOptions[timeIndex] || '请选择出生时辰'}}
+        </view>
+      </picker>
+    </view>
+    
+    <view class="button-group">
+      <button class="quick-btn" bindtap="onQuickAnalysis" disabled="{{loading}}">
+        {{loading ? '分析中...' : '快速分析'}}
+      </button>
+      
+      <button class="detail-btn" bindtap="goToDetailAnalysis">
+        详细分析
+      </button>
+    </view>
+  </view>
+  
+  <view class="tips">
+    <text class="tips-title">💡 温馨提示</text>
+    <text class="tips-content">快速分析提供基础的个性特征分析，详细分析可获得更全面的报告</text>
+  </view>
+</view> 

@@ -1,0 +1,96 @@
+.container {
+  padding: 40rpx;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 80rpx;
+  padding-top: 60rpx;
+}
+
+.title {
+  display: block;
+  font-size: 56rpx;
+  color: white;
+  font-weight: bold;
+  margin-bottom: 20rpx;
+}
+
+.subtitle {
+  font-size: 32rpx;
+  color: rgba(255,255,255,0.8);
+}
+
+.today-fortune {
+  background: rgba(255,255,255,0.9);
+  border-radius: 15rpx;
+  padding: 30rpx;
+  margin-bottom: 40rpx;
+}
+
+.fortune-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.fortune-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.refresh-btn {
+  font-size: 26rpx;
+  color: #667eea;
+  padding: 10rpx 20rpx;
+  border: 2rpx solid #667eea;
+  border-radius: 20rpx;
+}
+
+.fortune-content {
+  font-size: 28rpx;
+  line-height: 1.6;
+  color: #666;
+}
+
+.features {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30rpx;
+}
+
+.feature-card {
+  background: white;
+  border-radius: 20rpx;
+  padding: 40rpx 30rpx;
+  text-align: center;
+  box-shadow: 0 10rpx 30rpx rgba(0,0,0,0.1);
+  transition: transform 0.3s ease;
+}
+
+.feature-card:active {
+  transform: scale(0.95);
+}
+
+.feature-icon {
+  font-size: 60rpx;
+  margin-bottom: 20rpx;
+}
+
+.feature-title {
+  display: block;
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 15rpx;
+}
+
+.feature-desc {
+  font-size: 26rpx;
+  color: #666;
+  line-height: 1.4;
+} 
