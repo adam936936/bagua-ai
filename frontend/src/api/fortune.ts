@@ -8,38 +8,63 @@ export const fortuneApi = {
   /**
    * 计算命理信息
    */
-  async calculate(birthInfo: BirthInfo): Promise<FortuneResult> {
-    const response = await request.post<FortuneResult>('/fortune/calculate', {
+  async calculate(birthInfo: BirthInfo): Promise<any> {
+    // 获取用户ID，如果没有则生成一个临时ID
+    let userId = uni.getStorageSync('userId')
+    if (!userId) {
+      userId = Date.now() // 使用时间戳作为临时用户ID
+      uni.setStorageSync('userId', userId)
+    }
+    
+    const response = await request.post<any>('/fortune/calculate', {
       ...birthInfo,
-      userId: uni.getStorageSync('userId') || 0
+      userId: Number(userId)
     })
-    return response.data
+    return response
   },
   
   /**
    * AI推荐姓名
    */
-  async recommendNames(params: NameRecommendRequest): Promise<NameRecommendation[]> {
-    const response = await request.post<NameRecommendation[]>('/fortune/recommend-names', params)
-    return response.data
+  async recommendNames(params: NameRecommendRequest): Promise<any> {
+    // 获取用户ID
+    let userId = uni.getStorageSync('userId')
+    if (!userId) {
+      userId = Date.now()
+      uni.setStorageSync('userId', userId)
+    }
+    
+    const response = await request.post<any>('/fortune/recommend-names', {
+      ...params,
+      userId: Number(userId)
+    })
+    return response
   },
   
   /**
    * 获取今日运势
    */
-  async getTodayFortune(): Promise<string> {
-    const response = await request.get<string>('/fortune/today-fortune')
-    return response.data
+  async getTodayFortune(): Promise<any> {
+    const response = await request.get<any>('/fortune/today-fortune')
+    return response
   },
   
   /**
    * 获取用户历史记录
    */
-  async getHistory(userId: number, page: number = 1, size: number = 10): Promise<FortuneResult[]> {
-    const response = await request.get<FortuneResult[]>(`/fortune/history/${userId}`, {
+  async getHistory(userId: number, page: number = 1, size: number = 10): Promise<any> {
+    const response = await request.get<any>(`/fortune/history/${userId}`, {
       page,
       size
     })
-    return response.data
+    return response
+  },
+
+  /**
+   * 保存历史记录
+   */
+  async saveHistory(historyData: any): Promise<any> {
+    const response = await request.post<any>('/fortune/save-history', historyData)
+    return response
   }
 } 

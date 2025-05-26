@@ -1,400 +1,515 @@
 <template>
-  <view class="name-recommend-page">
-    <!-- 页面标题 -->
-    <view class="page-header">
-      <text class="page-title">AI智能起名</text>
-      <text class="page-subtitle">基于五行命理，为您推荐最适合的姓名</text>
+  <view class="container">
+    <view class="header">
+      <text class="title">AI起名</text>
+      <text class="subtitle">基于五行缺失的智能起名推荐</text>
     </view>
-
-    <!-- 输入区域 -->
-    <view class="input-container">
-      <view class="input-item">
-        <text class="input-label">姓氏</text>
-        <input 
-          class="input-field" 
-          v-model="formData.surname" 
-          placeholder="请输入姓氏（可选）"
-          maxlength="2"
-        />
+    
+    <view class="form-card">
+      <!-- 百家姓选择 -->
+      <view class="form-section">
+        <text class="section-title">选择姓氏</text>
+        <view class="surname-grid">
+          <view 
+            class="surname-item" 
+            v-for="(surname, index) in commonSurnames" 
+            :key="index"
+            :class="{ selected: selectedSurname === surname }"
+            @tap="selectSurname(surname)"
+          >
+            {{ surname }}
+          </view>
+        </view>
+        <view class="custom-surname">
+          <input 
+            class="surname-input" 
+            v-model="customSurname" 
+            placeholder="或输入其他姓氏"
+            maxlength="2"
+            @input="onCustomSurnameInput"
+          />
+        </view>
       </view>
       
-      <view class="info-display">
-        <view class="info-item">
-          <text class="info-label">五行缺失</text>
-          <text class="info-value">{{ formData.wuXingLack || '无' }}</text>
-        </view>
-        <view class="info-item">
-          <text class="info-label">天干地支</text>
-          <text class="info-value">{{ formData.ganZhi }}</text>
+      <!-- 性别选择 -->
+      <view class="form-section">
+        <text class="section-title">选择性别</text>
+        <view class="gender-options">
+          <view 
+            class="gender-item" 
+            :class="{ selected: selectedGender === 'male' }"
+            @tap="selectGender('male')"
+          >
+            <text class="gender-icon">👦</text>
+            <text class="gender-text">男孩</text>
+          </view>
+          <view 
+            class="gender-item" 
+            :class="{ selected: selectedGender === 'female' }"
+            @tap="selectGender('female')"
+          >
+            <text class="gender-icon">👧</text>
+            <text class="gender-text">女孩</text>
+          </view>
         </view>
       </view>
-
+      
+      <!-- 八字信息显示 -->
+      <view class="form-section" v-if="hasFortuneData">
+        <text class="section-title">八字信息</text>
+        <view class="fortune-info">
+          <view class="info-row">
+            <text class="info-label">天干地支：</text>
+            <text class="info-value">{{ ganZhi || '暂无数据' }}</text>
+          </view>
+          <view class="info-row">
+            <text class="info-label">五行缺失：</text>
+            <text class="info-value">{{ wuXingLack || '暂无数据' }}</text>
+          </view>
+        </view>
+        <text class="info-tip">💡 AI将根据您的五行缺失推荐合适的姓名</text>
+      </view>
+      
+      <!-- 无八字数据提示 -->
+      <view class="form-section" v-else>
+        <view class="no-data-tip">
+          <text class="tip-icon">⚠️</text>
+          <text class="tip-text">暂无八字数据，请先进行八字分析</text>
+          <button class="go-analyze-btn" @tap="goToAnalyze">立即分析</button>
+        </view>
+      </view>
+      
+      <!-- 推荐按钮 -->
       <button 
         class="recommend-btn" 
-        :disabled="loading"
-        @click="handleRecommend"
+        :class="{ disabled: !canRecommend || loading }"
+        :disabled="!canRecommend || loading"
+        @tap="getRecommendNames"
       >
-        <text v-if="loading">AI分析中...</text>
-        <text v-else>获取推荐姓名</text>
+        {{ loading ? '推荐中...' : '获取AI推荐姓名' }}
       </button>
     </view>
-
+    
     <!-- 推荐结果 -->
-    <view v-if="recommendations.length > 0" class="result-container">
-      <view class="result-header">
-        <text class="result-title">推荐姓名</text>
-        <text class="result-subtitle">以下是根据您的命理信息推荐的姓名</text>
-      </view>
-
-      <view class="name-list">
+    <view class="result-card" v-if="recommendedNames.length > 0">
+      <text class="result-title">💎 AI推荐姓名</text>
+      <view class="names-list">
         <view 
-          v-for="(item, index) in recommendations" 
+          class="name-item" 
+          v-for="(name, index) in recommendedNames" 
           :key="index"
-          class="name-item"
-          @click="handleSelectName(item)"
+          :class="{ selected: selectedName === name }"
+          @tap="selectName(name)"
         >
-          <view class="name-header">
-            <view class="name-info">
-              <text class="name-text">{{ item.name }}</text>
-              <view class="name-meta">
-                <text class="wu-xing">{{ item.wuXing }}</text>
-                <text class="score">{{ item.score }}分</text>
-              </view>
-            </view>
-            <view class="name-action">
-              <text class="action-text">选择</text>
-            </view>
-          </view>
-          <view class="name-reason">
-            <text class="reason-text">{{ item.reason }}</text>
-          </view>
+          <text class="name-text">{{ name }}</text>
+          <text class="name-check" v-if="selectedName === name">✓</text>
         </view>
       </view>
-    </view>
-
-    <!-- 空状态 -->
-    <view v-else-if="!loading && hasSearched" class="empty-state">
-      <text class="empty-text">暂无推荐结果</text>
-      <text class="empty-subtitle">请检查输入信息后重试</text>
+      <view class="result-actions">
+        <button class="action-btn secondary" @tap="getRecommendNames">重新推荐</button>
+        <button class="action-btn primary" @tap="saveName" :disabled="!selectedName">保存选择</button>
+      </view>
     </view>
   </view>
 </template>
 
 <script setup lang="ts">
-import { ref, onLoad } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useFortuneStore } from '@/store/modules/fortune'
-import type { NameRecommendRequest, NameRecommendationResponse } from '@/types/fortune'
 
-// 状态管理
 const fortuneStore = useFortuneStore()
 
-// 响应式数据
-const loading = ref(false)
-const hasSearched = ref(false)
-const recommendations = ref<NameRecommendationResponse[]>([])
+// 常用姓氏
+const commonSurnames = ref(['李', '王', '张', '刘', '陈', '杨', '赵', '黄'])
 
 // 表单数据
-const formData = ref<NameRecommendRequest>({
-  userId: 1, // 临时用户ID
-  wuXingLack: '',
-  ganZhi: '',
-  surname: ''
+const selectedSurname = ref('')
+const customSurname = ref('')
+const selectedGender = ref('')
+const selectedName = ref('')
+
+// 计算属性
+const currentSurname = computed(() => customSurname.value || selectedSurname.value)
+const hasFortuneData = computed(() => !!fortuneStore.result)
+const ganZhi = computed(() => fortuneStore.result?.ganZhi)
+const wuXingLack = computed(() => fortuneStore.result?.wuXingLack)
+const recommendedNames = computed(() => fortuneStore.recommendedNames)
+const loading = computed(() => fortuneStore.loading)
+
+const canRecommend = computed(() => {
+  return currentSurname.value && selectedGender.value && hasFortuneData.value
 })
 
-// 页面加载
-onLoad((options: any) => {
-  if (options.wuXingLack) {
-    formData.value.wuXingLack = options.wuXingLack
-  }
-  if (options.ganZhi) {
-    formData.value.ganZhi = options.ganZhi
+onMounted(async () => {
+  // 加载常用姓氏
+  try {
+    await fortuneStore.loadCommonSurnames()
+    if (fortuneStore.commonSurnames.length > 0) {
+      commonSurnames.value = fortuneStore.commonSurnames
+    }
+  } catch (error) {
+    console.error('加载常用姓氏失败:', error)
   }
 })
 
-// 获取推荐
-const handleRecommend = async () => {
-  if (loading.value) return
+// 选择姓氏
+const selectSurname = (surname: string) => {
+  selectedSurname.value = surname
+  customSurname.value = ''
+}
 
-  loading.value = true
-  hasSearched.value = true
+// 自定义姓氏输入
+const onCustomSurnameInput = () => {
+  if (customSurname.value) {
+    selectedSurname.value = ''
+  }
+}
+
+// 选择性别
+const selectGender = (gender: string) => {
+  selectedGender.value = gender
+}
+
+// 选择姓名
+const selectName = (name: string) => {
+  selectedName.value = name
+}
+
+// 获取推荐姓名
+const getRecommendNames = async () => {
+  if (!canRecommend.value || loading.value) return
   
   try {
-    const response = await fortuneStore.recommendNames(formData.value)
-    recommendations.value = response
+    const params = {
+      surname: currentSurname.value,
+      gender: selectedGender.value,
+      wuXingLack: wuXingLack.value
+    }
     
-    if (response.length === 0) {
+    await fortuneStore.loadRecommendNames(params)
+    selectedName.value = '' // 重置选择
+    
+    if (recommendedNames.value.length === 0) {
       uni.showToast({
         title: '暂无推荐结果',
         icon: 'none'
       })
-    } else {
-      uni.showToast({
-        title: '推荐完成',
-        icon: 'success'
-      })
     }
   } catch (error) {
-    console.error('推荐失败:', error)
+    console.error('获取推荐姓名失败:', error)
     uni.showToast({
       title: '推荐失败，请重试',
-      icon: 'error'
+      icon: 'none'
     })
-  } finally {
-    loading.value = false
   }
 }
 
-// 选择姓名
-const handleSelectName = (item: NameRecommendationResponse) => {
+// 保存选择
+const saveName = () => {
+  if (!selectedName.value) return
+  
   uni.showModal({
-    title: '确认选择',
-    content: `您选择了姓名：${item.name}`,
-    success: (res) => {
-      if (res.confirm) {
-        uni.showToast({
-          title: '已选择该姓名',
-          icon: 'success'
-        })
-        
-        // 可以在这里保存选择的姓名或进行其他操作
-        setTimeout(() => {
-          uni.navigateBack()
-        }, 1500)
-      }
+    title: '保存成功',
+    content: `已保存推荐姓名：${selectedName.value}`,
+    showCancel: false,
+    confirmText: '确定',
+    success: () => {
+      // 可以跳转到其他页面或执行其他操作
     }
+  })
+}
+
+// 跳转到分析页面
+const goToAnalyze = () => {
+  uni.navigateTo({
+    url: '/pages/calculate/calculate'
   })
 }
 </script>
 
 <style lang="scss" scoped>
-.name-recommend-page {
+.container {
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 20rpx;
+  padding: 40rpx 30rpx;
 }
 
-.page-header {
+.header {
   text-align: center;
-  padding: 60rpx 0 40rpx;
+  margin-bottom: 40rpx;
   
-  .page-title {
+  .title {
     display: block;
     font-size: 48rpx;
     font-weight: bold;
-    color: #fff;
-    margin-bottom: 20rpx;
+    color: white;
+    margin-bottom: 10rpx;
   }
   
-  .page-subtitle {
+  .subtitle {
     display: block;
     font-size: 28rpx;
     color: rgba(255, 255, 255, 0.8);
   }
 }
 
-.input-container {
-  background: #fff;
+.form-card {
+  background: white;
   border-radius: 20rpx;
   padding: 40rpx;
   margin-bottom: 40rpx;
-  box-shadow: 0 10rpx 30rpx rgba(0, 0, 0, 0.1);
 }
 
-.input-item {
+.form-section {
   margin-bottom: 40rpx;
-}
-
-.input-label {
-  display: block;
-  font-size: 32rpx;
-  font-weight: 500;
-  color: #333;
-  margin-bottom: 20rpx;
-}
-
-.input-field {
-  width: 100%;
-  height: 88rpx;
-  padding: 0 24rpx;
-  border: 2rpx solid #e5e5e5;
-  border-radius: 12rpx;
-  font-size: 30rpx;
-  color: #333;
-  background: #fff;
   
-  &:focus {
-    border-color: #667eea;
+  &:last-child {
+    margin-bottom: 0;
+  }
+  
+  .section-title {
+    display: block;
+    font-size: 28rpx;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 20rpx;
   }
 }
 
-.info-display {
+.surname-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15rpx;
+  margin-bottom: 20rpx;
+  
+  .surname-item {
+    height: 80rpx;
+    border: 2rpx solid #e0e0e0;
+    border-radius: 10rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28rpx;
+    color: #666;
+    background: #f9f9f9;
+    
+    &.selected {
+      border-color: #667eea;
+      background: #f8f9ff;
+      color: #667eea;
+      font-weight: bold;
+    }
+  }
+}
+
+.custom-surname {
+  .surname-input {
+    width: 100%;
+    height: 80rpx;
+    border: 2rpx solid #e0e0e0;
+    border-radius: 10rpx;
+    padding: 0 20rpx;
+    font-size: 28rpx;
+    background: #f9f9f9;
+  }
+}
+
+.gender-options {
   display: flex;
-  gap: 24rpx;
-  margin-bottom: 40rpx;
+  gap: 20rpx;
+  
+  .gender-item {
+    flex: 1;
+    height: 100rpx;
+    border: 2rpx solid #e0e0e0;
+    border-radius: 15rpx;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #f9f9f9;
+    
+    &.selected {
+      border-color: #667eea;
+      background: #f8f9ff;
+    }
+    
+    .gender-icon {
+      font-size: 40rpx;
+      margin-bottom: 5rpx;
+    }
+    
+    .gender-text {
+      font-size: 24rpx;
+      color: #666;
+      
+      .selected & {
+        color: #667eea;
+        font-weight: bold;
+      }
+    }
+  }
 }
 
-.info-item {
-  flex: 1;
-  padding: 24rpx;
-  background: #f8f9fa;
-  border-radius: 12rpx;
-  text-align: center;
+.fortune-info {
+  background: #f8f9ff;
+  border-radius: 10rpx;
+  padding: 25rpx;
+  margin-bottom: 15rpx;
+  
+  .info-row {
+    display: flex;
+    margin-bottom: 10rpx;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+    
+    .info-label {
+      font-size: 26rpx;
+      color: #666;
+      min-width: 140rpx;
+    }
+    
+    .info-value {
+      font-size: 26rpx;
+      color: #333;
+      font-weight: 500;
+    }
+  }
 }
 
-.info-label {
+.info-tip {
   display: block;
   font-size: 24rpx;
-  color: #666;
-  margin-bottom: 8rpx;
+  color: #667eea;
+  line-height: 1.5;
 }
 
-.info-value {
-  display: block;
-  font-size: 28rpx;
-  font-weight: 500;
-  color: #333;
+.no-data-tip {
+  text-align: center;
+  padding: 40rpx 0;
+  
+  .tip-icon {
+    font-size: 60rpx;
+    margin-bottom: 20rpx;
+  }
+  
+  .tip-text {
+    display: block;
+    font-size: 28rpx;
+    color: #666;
+    margin-bottom: 30rpx;
+  }
+  
+  .go-analyze-btn {
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 25rpx;
+    padding: 15rpx 30rpx;
+    font-size: 26rpx;
+  }
 }
 
 .recommend-btn {
   width: 100%;
-  height: 88rpx;
+  height: 80rpx;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
   border: none;
-  border-radius: 12rpx;
+  border-radius: 15rpx;
   font-size: 32rpx;
-  font-weight: 500;
-  color: #fff;
+  font-weight: bold;
   
-  &:disabled {
+  &.disabled {
+    opacity: 0.6;
     background: #ccc;
-    color: #999;
   }
 }
 
-.result-container {
-  background: #fff;
+.result-card {
+  background: white;
   border-radius: 20rpx;
   padding: 40rpx;
-  box-shadow: 0 10rpx 30rpx rgba(0, 0, 0, 0.1);
-}
-
-.result-header {
-  text-align: center;
-  margin-bottom: 40rpx;
-}
-
-.result-title {
-  display: block;
-  font-size: 36rpx;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 12rpx;
-}
-
-.result-subtitle {
-  display: block;
-  font-size: 26rpx;
-  color: #666;
-}
-
-.name-list {
-  display: flex;
-  flex-direction: column;
-  gap: 24rpx;
-}
-
-.name-item {
-  padding: 32rpx;
-  background: #f8f9fa;
-  border-radius: 16rpx;
-  border: 2rpx solid transparent;
-  transition: all 0.3s ease;
   
-  &:active {
-    border-color: #667eea;
-    background: #f0f4ff;
+  .result-title {
+    display: block;
+    font-size: 32rpx;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 30rpx;
+    text-align: center;
   }
-}
-
-.name-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16rpx;
-}
-
-.name-info {
-  flex: 1;
-}
-
-.name-text {
-  display: block;
-  font-size: 36rpx;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 8rpx;
-}
-
-.name-meta {
-  display: flex;
-  align-items: center;
-  gap: 16rpx;
-}
-
-.wu-xing {
-  padding: 4rpx 12rpx;
-  background: #667eea;
-  color: #fff;
-  font-size: 22rpx;
-  border-radius: 12rpx;
-}
-
-.score {
-  font-size: 24rpx;
-  font-weight: 500;
-  color: #ff6b6b;
-}
-
-.name-action {
-  padding: 12rpx 24rpx;
-  background: #667eea;
-  border-radius: 20rpx;
-}
-
-.action-text {
-  font-size: 26rpx;
-  color: #fff;
-}
-
-.name-reason {
-  padding-top: 16rpx;
-  border-top: 1rpx solid #e5e5e5;
-}
-
-.reason-text {
-  font-size: 26rpx;
-  line-height: 1.5;
-  color: #666;
-}
-
-.empty-state {
-  text-align: center;
-  padding: 120rpx 40rpx;
-  background: #fff;
-  border-radius: 20rpx;
-  box-shadow: 0 10rpx 30rpx rgba(0, 0, 0, 0.1);
-}
-
-.empty-text {
-  display: block;
-  font-size: 32rpx;
-  color: #999;
-  margin-bottom: 16rpx;
-}
-
-.empty-subtitle {
-  display: block;
-  font-size: 26rpx;
-  color: #ccc;
+  
+  .names-list {
+    margin-bottom: 40rpx;
+    
+    .name-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 25rpx;
+      border: 2rpx solid #e0e0e0;
+      border-radius: 15rpx;
+      margin-bottom: 15rpx;
+      background: #f9f9f9;
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+      
+      &.selected {
+        border-color: #667eea;
+        background: #f8f9ff;
+      }
+      
+      .name-text {
+        font-size: 32rpx;
+        color: #333;
+        font-weight: 500;
+        
+        .selected & {
+          color: #667eea;
+          font-weight: bold;
+        }
+      }
+      
+      .name-check {
+        font-size: 28rpx;
+        color: #667eea;
+        font-weight: bold;
+      }
+    }
+  }
+  
+  .result-actions {
+    display: flex;
+    gap: 20rpx;
+    
+    .action-btn {
+      flex: 1;
+      height: 70rpx;
+      border: none;
+      border-radius: 15rpx;
+      font-size: 28rpx;
+      font-weight: bold;
+      
+      &.secondary {
+        background: #f0f0f0;
+        color: #666;
+      }
+      
+      &.primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        
+        &[disabled] {
+          opacity: 0.6;
+          background: #ccc;
+        }
+      }
+    }
+  }
 }
 </style> 

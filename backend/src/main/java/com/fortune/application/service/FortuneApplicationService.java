@@ -113,8 +113,30 @@ public class FortuneApplicationService {
     public List<FortuneCalculateResponse> getUserHistory(Long userId, Integer page, Integer size) {
         System.out.println("获取用户历史记录，用户ID：" + userId + "，页码：" + page + "，大小：" + size);
         
-        // TODO: 实现数据库查询
-        // 这里返回空列表，实际应该从数据库查询
-        return new ArrayList<>();
+        try {
+            // TODO: 实现真实的数据库查询
+            // 这里返回模拟数据用于测试
+            List<FortuneCalculateResponse> mockHistory = new ArrayList<>();
+            
+            // 生成一些模拟历史记录
+            for (int i = 0; i < Math.min(size, 5); i++) {
+                FortuneCalculateResponse record = new FortuneCalculateResponse();
+                record.setId((long) (i + 1));
+                record.setLunar("农历" + (2024 - i) + "年正月初一");
+                record.setGanZhi("甲子年 丙寅月 戊申日 甲子时");
+                record.setWuXing("木2个 火1个 土2个 金1个 水2个");
+                record.setWuXingLack("无");
+                record.setShengXiao("龙");
+                record.setAiAnalysis("您的八字显示您是一个性格坚韧、意志坚强的人。事业方面会有不错的发展，财运稳中有升...");
+                record.setCreateTime(java.time.LocalDateTime.now().minusDays(i));
+                mockHistory.add(record);
+            }
+            
+            return mockHistory;
+            
+        } catch (Exception e) {
+            System.err.println("获取用户历史记录失败: " + e.getMessage());
+            return new ArrayList<>();
+        }
     }
 } 

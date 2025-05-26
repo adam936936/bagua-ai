@@ -2,6 +2,29 @@
   <view class="header">
     <text class="title">分析结果</text>
     <text class="subtitle">您的AI个性分析报告</text>
+    <!-- 右上角分享按钮 -->
+    <view class="share-menu" wx:if="{{result}}" bindtap="toggleShareMenu">
+      <view class="share-dots">
+        <view class="dot"></view>
+        <view class="dot"></view>
+        <view class="dot"></view>
+      </view>
+      <!-- 分享下拉菜单 -->
+      <view class="share-dropdown" wx:if="{{showShareMenu}}">
+        <view class="share-item" bindtap="shareToFriend">
+          <text class="share-icon">📱</text>
+          <text class="share-text">分享给朋友</text>
+        </view>
+        <view class="share-item" bindtap="generateQRCode">
+          <text class="share-icon">📷</text>
+          <text class="share-text">生成二维码</text>
+        </view>
+        <view class="share-item" bindtap="saveToAlbum">
+          <text class="share-icon">💾</text>
+          <text class="share-text">保存图片</text>
+        </view>
+      </view>
+    </view>
   </view>
   
   <view class="result-card" wx:if="{{result}}">
@@ -53,20 +76,29 @@
     <button class="back-btn" bindtap="goHome">返回首页</button>
   </view>
   
-  <view class="action-buttons" wx:if="{{result}}">
-    <button class="action-btn share-btn" bindtap="shareResult">
-      <text class="btn-icon">📤</text>
-      <text class="btn-text">分享</text>
-    </button>
-    
-    <button class="action-btn history-btn" bindtap="viewHistory">
-      <text class="btn-icon">📝</text>
-      <text class="btn-text">历史</text>
-    </button>
-    
-    <button class="action-btn reanalyze-btn" bindtap="reAnalysis">
+  <!-- 重新设计的底部按钮 -->
+  <view class="bottom-actions" wx:if="{{result}}">
+    <button class="btn-left secondary" bindtap="reAnalysis">
       <text class="btn-icon">🔄</text>
       <text class="btn-text">重新分析</text>
     </button>
+    <button class="btn-right primary" bindtap="saveResult">
+      <text class="btn-icon">💾</text>
+      <text class="btn-text">保存结果</text>
+    </button>
+  </view>
+  
+  <!-- 二维码弹窗 -->
+  <view class="qr-modal" wx:if="{{showQRCode}}" bindtap="closeQRCode">
+    <view class="qr-content" catchtap="stopPropagation">
+      <view class="qr-header">
+        <text class="qr-title">分享二维码</text>
+        <text class="qr-close" bindtap="closeQRCode">✕</text>
+      </view>
+      <view class="qr-code">
+        <image class="qr-image" src="{{qrCodeUrl}}" mode="aspectFit"></image>
+      </view>
+      <text class="qr-tip">长按保存二维码，分享给朋友</text>
+    </view>
   </view>
 </view> 

@@ -2,253 +2,228 @@
   <view class="container">
     <view class="header">
       <text class="title">历史记录</text>
+      <text class="subtitle">查看您的分析历史</text>
     </view>
     
     <view class="history-list" v-if="historyList.length > 0">
-      <view class="history-item" v-for="(item, index) in historyList" :key="index" 
-            @click="viewDetail(item)">
+      <view 
+        class="history-item" 
+        v-for="(item, index) in historyList" 
+        :key="index"
+        @tap="viewDetail(item)"
+      >
         <view class="item-header">
-          <text class="name">{{ item.name }}</text>
-          <text class="date">{{ item.date }}</text>
+          <text class="item-name">{{ item.userName }}</text>
+          <text class="item-date">{{ formatDate(item.createTime) }}</text>
         </view>
-        <view class="item-content">
+        <view class="item-info">
           <text class="birth-info">{{ item.birthDate }} {{ item.birthTime }}</text>
-          <text class="preview">{{ item.preview }}</text>
+          <text class="zodiac">{{ item.result?.shengXiao }}</text>
         </view>
-        <view class="item-footer">
-          <text class="zodiac">{{ item.zodiac }}</text>
-          <view class="actions">
-            <text class="action-btn" @click.stop="shareResult(item)">分享</text>
-            <text class="action-btn delete" @click.stop="deleteItem(index)">删除</text>
-          </view>
+        <view class="item-preview">
+          <text class="preview-text">{{ getPreviewText(item.result?.aiAnalysis) }}</text>
         </view>
       </view>
     </view>
     
-    <view class="empty-state" v-else>
-      <text class="empty-icon">📝</text>
-      <text class="empty-text">暂无历史记录</text>
-      <button class="start-btn" @click="startAnalysis">开始分析</button>
+    <view class="empty-state" v-else-if="!loading">
+      <view class="empty-icon">📝</view>
+      <text class="empty-text">暂无分析记录</text>
+      <text class="empty-desc">快去进行您的第一次命理分析吧</text>
+      <button class="go-analyze-btn" @tap="goToAnalyze">立即分析</button>
+    </view>
+    
+    <view class="loading-state" v-if="loading">
+      <text class="loading-text">加载中...</text>
     </view>
   </view>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useFortuneStore } from '@/store/modules/fortune'
 
-const historyList = ref([
-  {
-    name: '张三',
-    date: '2024-01-15',
-    birthDate: '1990-05-20',
-    birthTime: '午时',
-    zodiac: '马',
-    preview: '性格温和善良，具有很强的直觉力和创造力...'
-  },
-  {
-    name: '李四',
-    date: '2024-01-10',
-    birthDate: '1995-08-15',
-    birthTime: '申时',
-    zodiac: '猪',
-    preview: '聪明机智，善于沟通，事业运势较好...'
-  }
-])
+const fortuneStore = useFortuneStore()
 
-onMounted(() => {
-  // 从本地存储加载历史记录
-  loadHistory()
+const loading = ref(false)
+const historyList = computed(() => fortuneStore.historyList)
+
+onMounted(async () => {
+  await loadHistory()
 })
 
-const loadHistory = () => {
+const loadHistory = async () => {
+  loading.value = true
   try {
-    const stored = uni.getStorageSync('fortune_history')
-    if (stored) {
-      historyList.value = JSON.parse(stored)
-    }
-  } catch (e) {
-    console.error('加载历史记录失败:', e)
+    await fortuneStore.loadHistory()
+  } catch (error) {
+    console.error('加载历史记录失败:', error)
+    uni.showToast({
+      title: '加载失败',
+      icon: 'none'
+    })
+  } finally {
+    loading.value = false
   }
+}
+
+const formatDate = (dateStr: string) => {
+  if (!dateStr) return ''
+  const date = new Date(dateStr)
+  const month = (date.getMonth() + 1).toString().padStart(2, '0')
+  const day = date.getDate().toString().padStart(2, '0')
+  const hour = date.getHours().toString().padStart(2, '0')
+  const minute = date.getMinutes().toString().padStart(2, '0')
+  return `${month}-${day} ${hour}:${minute}`
+}
+
+const getPreviewText = (text: string) => {
+  if (!text) return '暂无分析内容'
+  return text.length > 50 ? text.substring(0, 50) + '...' : text
 }
 
 const viewDetail = (item: any) => {
-  // 跳转到详情页面
+  // 将历史记录设置为当前结果
+  fortuneStore.result = item.result
+  fortuneStore.userName = item.userName
+  fortuneStore.birthDate = item.birthDate
+  fortuneStore.birthTime = item.birthTime
+  
+  // 跳转到结果页面
   uni.navigateTo({
-    url: `/pages/result/result?name=${item.name}&birthDate=${item.birthDate}&birthTime=${item.birthTime}`
+    url: '/pages/result/result'
   })
 }
 
-const shareResult = (item: any) => {
-  uni.showActionSheet({
-    itemList: ['分享给朋友', '保存到相册'],
-    success: (res) => {
-      if (res.tapIndex === 0) {
-        // 分享给朋友
-        uni.showToast({
-          title: '分享功能开发中',
-          icon: 'none'
-        })
-      } else if (res.tapIndex === 1) {
-        // 保存到相册
-        uni.showToast({
-          title: '保存成功',
-          icon: 'success'
-        })
-      }
-    }
-  })
-}
-
-const deleteItem = (index: number) => {
-  uni.showModal({
-    title: '确认删除',
-    content: '确定要删除这条记录吗？',
-    success: (res) => {
-      if (res.confirm) {
-        historyList.value.splice(index, 1)
-        // 保存到本地存储
-        uni.setStorageSync('fortune_history', JSON.stringify(historyList.value))
-        uni.showToast({
-          title: '删除成功',
-          icon: 'success'
-        })
-      }
-    }
-  })
-}
-
-const startAnalysis = () => {
-  uni.switchTab({
-    url: '/pages/index/index'
+const goToAnalyze = () => {
+  uni.navigateTo({
+    url: '/pages/calculate/calculate'
   })
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .container {
-  padding: 40rpx;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 40rpx 30rpx;
 }
 
 .header {
   text-align: center;
   margin-bottom: 40rpx;
-}
-
-.title {
-  font-size: 48rpx;
-  color: white;
-  font-weight: bold;
+  
+  .title {
+    display: block;
+    font-size: 48rpx;
+    font-weight: bold;
+    color: white;
+    margin-bottom: 10rpx;
+  }
+  
+  .subtitle {
+    display: block;
+    font-size: 28rpx;
+    color: rgba(255, 255, 255, 0.8);
+  }
 }
 
 .history-list {
-  margin-bottom: 40rpx;
-}
-
-.history-item {
-  background: white;
-  border-radius: 20rpx;
-  padding: 30rpx;
-  margin-bottom: 20rpx;
-  box-shadow: 0 10rpx 30rpx rgba(0,0,0,0.1);
-}
-
-.item-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20rpx;
-}
-
-.name {
-  font-size: 32rpx;
-  font-weight: bold;
-  color: #333;
-}
-
-.date {
-  font-size: 24rpx;
-  color: #666;
-}
-
-.item-content {
-  margin-bottom: 20rpx;
-}
-
-.birth-info {
-  display: block;
-  font-size: 28rpx;
-  color: #666;
-  margin-bottom: 10rpx;
-}
-
-.preview {
-  font-size: 26rpx;
-  color: #999;
-  line-height: 1.4;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.item-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.zodiac {
-  background: #667eea;
-  color: white;
-  padding: 8rpx 16rpx;
-  border-radius: 20rpx;
-  font-size: 24rpx;
-}
-
-.actions {
-  display: flex;
-  gap: 20rpx;
-}
-
-.action-btn {
-  font-size: 26rpx;
-  color: #667eea;
-  padding: 10rpx 20rpx;
-  border: 2rpx solid #667eea;
-  border-radius: 20rpx;
-}
-
-.action-btn.delete {
-  color: #ff6b6b;
-  border-color: #ff6b6b;
+  .history-item {
+    background: white;
+    border-radius: 15rpx;
+    padding: 30rpx;
+    margin-bottom: 20rpx;
+    box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.1);
+    
+    .item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15rpx;
+      
+      .item-name {
+        font-size: 32rpx;
+        font-weight: bold;
+        color: #333;
+      }
+      
+      .item-date {
+        font-size: 24rpx;
+        color: #999;
+      }
+    }
+    
+    .item-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15rpx;
+      
+      .birth-info {
+        font-size: 26rpx;
+        color: #666;
+      }
+      
+      .zodiac {
+        font-size: 26rpx;
+        color: #667eea;
+        font-weight: 500;
+      }
+    }
+    
+    .item-preview {
+      .preview-text {
+        font-size: 24rpx;
+        color: #999;
+        line-height: 1.5;
+      }
+    }
+  }
 }
 
 .empty-state {
   text-align: center;
   padding: 100rpx 0;
+  
+  .empty-icon {
+    font-size: 120rpx;
+    margin-bottom: 30rpx;
+  }
+  
+  .empty-text {
+    display: block;
+    font-size: 32rpx;
+    color: white;
+    font-weight: bold;
+    margin-bottom: 15rpx;
+  }
+  
+  .empty-desc {
+    display: block;
+    font-size: 26rpx;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 40rpx;
+  }
+  
+  .go-analyze-btn {
+    background: white;
+    color: #667eea;
+    border: none;
+    border-radius: 50rpx;
+    padding: 20rpx 40rpx;
+    font-size: 28rpx;
+    font-weight: bold;
+  }
 }
 
-.empty-icon {
-  font-size: 120rpx;
-  margin-bottom: 40rpx;
-}
-
-.empty-text {
-  display: block;
-  font-size: 32rpx;
-  color: rgba(255,255,255,0.8);
-  margin-bottom: 60rpx;
-}
-
-.start-btn {
-  background: white;
-  color: #667eea;
-  border: none;
-  border-radius: 50rpx;
-  padding: 20rpx 60rpx;
-  font-size: 30rpx;
-  font-weight: bold;
+.loading-state {
+  text-align: center;
+  padding: 100rpx 0;
+  
+  .loading-text {
+    font-size: 28rpx;
+    color: rgba(255, 255, 255, 0.8);
+  }
 }
 </style> 

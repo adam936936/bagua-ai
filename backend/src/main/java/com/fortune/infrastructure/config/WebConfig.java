@@ -16,11 +16,12 @@ public class WebConfig implements WebMvcConfigurer {
     
     /**
      * 配置路径匹配规则
-     * 为所有控制器添加/api前缀
+     * 由于context-path已经是/api，这里不再添加额外前缀
      */
     @Override
     public void configurePathMatch(PathMatchConfigurer configurer) {
-        configurer.addPathPrefix("/api", c -> c.getPackageName().startsWith("com.fortune.interfaces.web"));
+        // 注释掉路径前缀配置，因为context-path已经是/api
+        // configurer.addPathPrefix("/api", c -> c.getPackageName().startsWith("com.fortune.interfaces.web"));
     }
     
     @Override
