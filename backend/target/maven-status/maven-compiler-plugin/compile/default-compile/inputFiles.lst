@@ -4,6 +4,7 @@
 /Users/xiatian/xiatian/ai-cursor/bagua-ai/backend/src/main/java/com/fortune/domain/fortune/valueobject/BirthInfo.java
 /Users/xiatian/xiatian/ai-cursor/bagua-ai/backend/src/main/java/com/fortune/interfaces/web/FortuneController.java
 /Users/xiatian/xiatian/ai-cursor/bagua-ai/backend/src/main/java/com/fortune/interfaces/assembler/FortuneAssembler.java
+/Users/xiatian/xiatian/ai-cursor/bagua-ai/backend/src/main/java/com/fortune/infrastructure/config/WebConfig.java
 /Users/xiatian/xiatian/ai-cursor/bagua-ai/backend/src/main/java/com/fortune/domain/fortune/entity/FortuneRecord.java
 /Users/xiatian/xiatian/ai-cursor/bagua-ai/backend/src/main/java/com/fortune/interfaces/dto/response/FortuneCalculateResponse.java
 /Users/xiatian/xiatian/ai-cursor/bagua-ai/backend/src/main/java/com/fortune/domain/fortune/valueobject/LunarDate.java

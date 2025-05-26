@@ -6,3 +6,11 @@
 30429:M 25 May 2025 23:53:13.333 # WARNING: The TCP backlog setting of 511 cannot be enforced because kern.ipc.somaxconn is set to the lower value of 128.
 30429:M 25 May 2025 23:53:13.339 # Warning: Could not create server TCP listening socket *:6379: bind: Address already in use
 30429:M 25 May 2025 23:53:13.339 # Failed listening on port 6379 (tcp), aborting.
+2119:C 26 May 2025 08:55:19.119 * oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+2119:C 26 May 2025 08:55:19.119 * Redis version=8.0.1, bits=64, commit=00000000, modified=1, pid=2119, just started
+2119:C 26 May 2025 08:55:19.119 * Configuration loaded
+2119:M 26 May 2025 08:55:19.120 * monotonic clock: POSIX clock_gettime
+2119:M 26 May 2025 08:55:19.121 * Running mode=standalone, port=6379.
+2119:M 26 May 2025 08:55:19.121 # WARNING: The TCP backlog setting of 511 cannot be enforced because kern.ipc.somaxconn is set to the lower value of 128.
+2119:M 26 May 2025 08:55:19.121 * Server initialized
+2119:M 26 May 2025 08:55:19.122 * Ready to accept connections tcp
