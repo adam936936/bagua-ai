@@ -40,6 +40,9 @@ public class DeepSeekService {
     @Value("${fortune.deepseek.temperature}")
     private Double temperature;
     
+    @Value("${fortune.deepseek.mock-mode:false}")
+    private Boolean mockMode;
+    
     private final RestTemplate restTemplate = new RestTemplate();
     
     /**
@@ -100,6 +103,12 @@ public class DeepSeekService {
      * 调用DeepSeek API
      */
     private String callDeepSeekApi(String prompt) {
+        // 如果启用模拟模式，直接返回模拟数据
+        if (mockMode) {
+            System.out.println("模拟模式：跳过DeepSeek API调用");
+            return generateMockResponse(prompt);
+        }
+        
         // 构建请求体
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("model", model);
@@ -134,6 +143,19 @@ public class DeepSeekService {
         }
         
         throw new RuntimeException("DeepSeek API调用失败");
+    }
+    
+    /**
+     * 生成模拟响应
+     */
+    private String generateMockResponse(String prompt) {
+        if (prompt.contains("今日运势")) {
+            return "【今日运势】🌟\n\n**事业**：今天思维敏捷，适合处理复杂问题，团队合作顺利，有望获得上级认可。\n\n**财运**：正财运佳，可能有意外收入，但需谨慎投资，避免冲动消费。\n\n**感情**：单身者桃花运旺，有机会遇到心仪对象；有伴者感情稳定，适合深入交流。\n\n**健康**：精神状态良好，注意劳逸结合，适量运动有助身心健康。\n\n✨ **幸运提示**：保持积极心态，好运自然来！";
+        } else if (prompt.contains("命理分析")) {
+            return "### 1. 性格特点\n您性格温和善良，心思细腻，富有同情心。具有很强的直觉力和洞察力，善于理解他人，人际关系和谐。\n\n### 2. 事业发展\n适合从事文化、教育、咨询或服务类工作。具备领导才能，但更适合幕后策划。建议发挥创意优势，稳步发展。\n\n### 3. 财运状况\n财运平稳，正财运较好，适合稳健投资。中年后财富积累会更加顺利，建议合理规划财务。\n\n### 4. 感情婚姻\n感情运势良好，容易获得异性好感。建议真诚待人，注重精神层面的交流，婚姻生活会很幸福。\n\n### 5. 健康状况\n整体健康状况良好，需注意情绪管理，保持规律作息，适度运动增强体质。\n\n### 6. 人生建议\n发挥自身优势，保持学习心态，多与正能量的人交往，人生道路会越走越宽广。";
+        } else {
+            return "感谢您的咨询，这是一个模拟响应。在实际应用中，这里会返回AI生成的专业内容。";
+        }
     }
     
     /**

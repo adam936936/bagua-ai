@@ -1,0 +1,13 @@
+FROM maven:3.8.6-openjdk-11-slim
+
+WORKDIR /app
+
+# 复制pom.xml和源码
+COPY pom.xml .
+COPY src ./src
+
+# 构建项目
+RUN mvn clean package -DskipTests
+
+# 复制构建结果到输出目录
+CMD ["cp", "target/fortune-mini-app-1.0.0.jar", "/output/"]

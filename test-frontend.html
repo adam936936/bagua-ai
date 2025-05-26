@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI八卦运势小程序 - 测试页面</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        .error {
+            background: #fee;
+            border-left-color: #e74c3c;
+            color: #c0392b;
+        }
+        .loading {
+            text-align: center;
+            color: #666;
+        }
+        .api-status {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 6px;
+        }
+        .status-online {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-offline {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .dot-green { background: #28a745; }
+        .dot-red { background: #dc3545; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔮 AI八卦运势小程序</h1>
+        
+        <!-- API状态 -->
+        <div id="apiStatus" class="api-status">
+            <div class="status-dot dot-red"></div>
+            <span>正在检查后端服务状态...</span>
+        </div>
+        
+        <!-- 测算表单 -->
+        <form id="fortuneForm">
+            <div class="form-group">
+                <label for="userName">姓名：</label>
+                <input type="text" id="userName" name="userName" placeholder="请输入您的姓名" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="birthDate">出生日期：</label>
+                <input type="date" id="birthDate" name="birthDate" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="birthTime">出生时辰：</label>
+                <select id="birthTime" name="birthTime" required>
+                    <option value="">请选择出生时辰</option>
+                    <option value="子时">子时 (23:00-01:00)</option>
+                    <option value="丑时">丑时 (01:00-03:00)</option>
+                    <option value="寅时">寅时 (03:00-05:00)</option>
+                    <option value="卯时">卯时 (05:00-07:00)</option>
+                    <option value="辰时">辰时 (07:00-09:00)</option>
+                    <option value="巳时">巳时 (09:00-11:00)</option>
+                    <option value="午时">午时 (11:00-13:00)</option>
+                    <option value="未时">未时 (13:00-15:00)</option>
+                    <option value="申时">申时 (15:00-17:00)</option>
+                    <option value="酉时">酉时 (17:00-19:00)</option>
+                    <option value="戌时">戌时 (19:00-21:00)</option>
+                    <option value="亥时">亥时 (21:00-23:00)</option>
+                </select>
+            </div>
+            
+            <button type="submit" id="submitBtn">开始测算</button>
+        </form>
+        
+        <!-- 结果显示 -->
+        <div id="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8080/api';
+        
+        // 检查API状态
+        async function checkApiStatus() {
+            const statusElement = document.getElementById('apiStatus');
+            try {
+                const response = await fetch(`${API_BASE_URL}/actuator/health`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    statusElement.className = 'api-status status-online';
+                    statusElement.innerHTML = '<div class="status-dot dot-green"></div><span>后端服务运行正常</span>';
+                } else {
+                    throw new Error('服务异常');
+                }
+            } catch (error) {
+                statusElement.className = 'api-status status-offline';
+                statusElement.innerHTML = '<div class="status-dot dot-red"></div><span>后端服务连接失败</span>';
+            }
+        }
+        
+        // 测试今日运势API
+        async function testTodayFortune() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/fortune/today-fortune`);
+                const data = await response.json();
+                console.log('今日运势:', data);
+                return data;
+            } catch (error) {
+                console.error('获取今日运势失败:', error);
+                return null;
+            }
+        }
+        
+        // 提交表单
+        document.getElementById('fortuneForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const resultDiv = document.getElementById('result');
+            
+            // 获取表单数据
+            const formData = new FormData(e.target);
+            const birthInfo = {
+                userName: formData.get('userName'),
+                birthDate: formData.get('birthDate'),
+                birthTime: formData.get('birthTime')
+            };
+            
+            // 显示加载状态
+            submitBtn.disabled = true;
+            submitBtn.textContent = '测算中...';
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result loading';
+            resultDiv.innerHTML = '正在为您计算命理信息，请稍候...';
+            
+            try {
+                // 调用后端API
+                const response = await fetch(`${API_BASE_URL}/fortune/calculate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(birthInfo)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const result = await response.json();
+                
+                // 显示结果
+                resultDiv.className = 'result';
+                resultDiv.innerHTML = `
+                    <h3>🎯 ${birthInfo.userName} 的命理分析结果</h3>
+                    <p><strong>农历信息：</strong>${result.data?.lunar || '计算中...'}</p>
+                    <p><strong>八字信息：</strong>${result.data?.ganZhi || '计算中...'}</p>
+                    <p><strong>五行分析：</strong>${result.data?.wuXing || '计算中...'}</p>
+                    <p><strong>五行缺失：</strong>${result.data?.wuXingLack || '无'}</p>
+                    <p><strong>生肖属相：</strong>${result.data?.shengXiao || '计算中...'}</p>
+                    <p><strong>AI智能分析：</strong></p>
+                    <div style="background: #f0f8ff; padding: 15px; border-radius: 6px; margin-top: 10px;">
+                        ${result.data?.aiAnalysis || '正在生成AI分析...'}
+                    </div>
+                `;
+                
+            } catch (error) {
+                console.error('测算失败:', error);
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <h3>❌ 测算失败</h3>
+                    <p>错误信息：${error.message}</p>
+                    <p>请检查：</p>
+                    <ul>
+                        <li>后端服务是否正常运行</li>
+                        <li>网络连接是否正常</li>
+                        <li>输入信息是否正确</li>
+                    </ul>
+                `;
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '开始测算';
+            }
+        });
+        
+        // 页面加载时检查API状态
+        window.addEventListener('load', () => {
+            checkApiStatus();
+            testTodayFortune();
+        });
+        
+        // 每30秒检查一次API状态
+        setInterval(checkApiStatus, 30000);
+    </script>
+</body>
+</html> 

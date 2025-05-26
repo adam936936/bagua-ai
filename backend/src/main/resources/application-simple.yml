@@ -10,15 +10,9 @@ spring:
   # 使用H2内存数据库
   datasource:
     driver-class-name: org.h2.Driver
-    url: jdbc:h2:mem:fortune_db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MySQL
+    url: jdbc:h2:mem:fortune_db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MySQL;DATABASE_TO_LOWER=TRUE
     username: sa
     password: 
-    hikari:
-      minimum-idle: 5
-      maximum-pool-size: 20
-      idle-timeout: 600000
-      max-lifetime: 1800000
-      connection-timeout: 30000
   
   # H2控制台配置
   h2:
@@ -28,19 +22,11 @@ spring:
       settings:
         web-allow-others: true
   
-  # Redis配置
-  redis:
-    host: localhost
-    port: 6379
-    password: 
-    database: 0
-    timeout: 3000ms
-    lettuce:
-      pool:
-        max-active: 8
-        max-wait: -1ms
-        max-idle: 8
-        min-idle: 0
+  # 禁用Redis
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
   
   # Jackson配置
   jackson:
@@ -60,14 +46,14 @@ mybatis-plus:
       logic-delete-field: deleted
       logic-delete-value: 1
       logic-not-delete-value: 0
-  mapper-locations: classpath*:/mapper/**/*.xml
 
 # 日志配置
 logging:
   level:
     com.fortune: DEBUG
-    org.springframework.web: DEBUG
-    org.springframework.boot.autoconfigure: INFO
+    org.springframework.web: INFO
+    org.springframework.boot.autoconfigure: WARN
+    org.springframework.jdbc: DEBUG
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
 
@@ -78,21 +64,26 @@ fortune:
     secret: fortune-mini-app-secret-key-2024
     expiration: 86400000 # 24小时
   
-  # DeepSeek API配置
+  # DeepSeek API配置（模拟模式）
   deepseek:
     api-url: https://api.deepseek.com/v1/chat/completions
-    api-key: ${DEEPSEEK_API_KEY:sk-34a9f8ed9aac458086848e5223f34639}
+    api-key: ${DEEPSEEK_API_KEY:mock-api-key}
     model: deepseek-chat
     max-tokens: 1000
     temperature: 0.7
+    mock-mode: true  # 启用模拟模式
   
   # 微信小程序配置
   wechat:
-    app-id: ${WECHAT_APP_ID:your-wechat-app-id}
-    app-secret: ${WECHAT_APP_SECRET:your-wechat-app-secret}
-    
-# Swagger配置
-springfox:
-  documentation:
-    swagger-ui:
-      enabled: true
+    app-id: ${WECHAT_APP_ID:mock-app-id}
+    app-secret: ${WECHAT_APP_SECRET:mock-app-secret}
+
+# 管理端点配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always 

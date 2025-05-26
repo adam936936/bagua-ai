@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>八卦AI运势小程序 - 测试页面</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 {
+            text-align: center;
+            color: #4a5568;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            background: #f7fafc;
+        }
+        .test-section h3 {
+            color: #2d3748;
+            margin-top: 0;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            background: white;
+            border-left: 4px solid #667eea;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .error {
+            border-left-color: #e53e3e;
+            background: #fed7d7;
+        }
+        .success {
+            border-left-color: #38a169;
+            background: #c6f6d5;
+        }
+        .form-group {
+            margin: 15px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e0;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .status {
+            text-align: center;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .status.online {
+            background: #c6f6d5;
+            color: #2f855a;
+        }
+        .status.offline {
+            background: #fed7d7;
+            color: #c53030;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔮 八卦AI运势小程序</h1>
+        
+        <div id="status" class="status">检查服务状态中...</div>
+        
+        <!-- 今日运势测试 -->
+        <div class="test-section">
+            <h3>📅 今日运势</h3>
+            <button onclick="getTodayFortune()">获取今日运势</button>
+            <div id="todayFortuneResult" class="result" style="display:none;"></div>
+        </div>
+        
+        <!-- 命理计算测试 -->
+        <div class="test-section">
+            <h3>🎯 命理计算</h3>
+            <div class="form-group">
+                <label>姓名:</label>
+                <input type="text" id="userName" value="张三" placeholder="请输入姓名">
+            </div>
+            <div class="form-group">
+                <label>出生日期:</label>
+                <input type="date" id="birthDate" value="1990-01-01">
+            </div>
+            <div class="form-group">
+                <label>出生时间:</label>
+                <input type="time" id="birthTime" value="12:00">
+            </div>
+            <div class="form-group">
+                <label>性别:</label>
+                <select id="gender">
+                    <option value="MALE">男</option>
+                    <option value="FEMALE">女</option>
+                </select>
+            </div>
+            <button onclick="calculateFortune()">开始计算</button>
+            <div id="calculateResult" class="result" style="display:none;"></div>
+        </div>
+        
+        <!-- 姓名推荐测试 -->
+        <div class="test-section">
+            <h3>📝 姓名推荐</h3>
+            <div class="form-group">
+                <label>姓氏:</label>
+                <input type="text" id="surname" value="李" placeholder="请输入姓氏">
+            </div>
+            <div class="form-group">
+                <label>五行缺失:</label>
+                <input type="text" id="wuXingLack" value="水" placeholder="如：水、火、土等">
+            </div>
+            <button onclick="recommendNames()">获取姓名推荐</button>
+            <div id="nameResult" class="result" style="display:none;"></div>
+        </div>
+        
+        <!-- 性能测试 -->
+        <div class="test-section">
+            <h3>⚡ 性能测试</h3>
+            <div class="form-group">
+                <label>迭代次数:</label>
+                <input type="number" id="iterations" value="100" min="1" max="1000" placeholder="测试迭代次数">
+            </div>
+            <div class="form-group">
+                <label>延迟时间(ms):</label>
+                <input type="number" id="delay" value="10" min="0" max="1000" placeholder="每次迭代延迟">
+            </div>
+            <button onclick="performanceTest()">开始性能测试</button>
+            <div id="performanceResult" class="result" style="display:none;"></div>
+        </div>
+        
+        <!-- 网络联通性测试 -->
+        <div class="test-section">
+            <h3>🌐 网络联通性测试</h3>
+            <p>测试服务器响应时间和系统信息</p>
+            <button onclick="connectivityTest()">开始联通性测试</button>
+            <div id="connectivityResult" class="result" style="display:none;"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080/api';
+        
+        // 检查服务状态
+        async function checkStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/fortune/today-fortune`);
+                if (response.ok) {
+                    document.getElementById('status').textContent = '✅ 后端服务连接正常';
+                    document.getElementById('status').className = 'status online';
+                } else {
+                    throw new Error('服务响应异常');
+                }
+            } catch (error) {
+                document.getElementById('status').textContent = '❌ 后端服务连接失败';
+                document.getElementById('status').className = 'status offline';
+            }
+        }
+        
+        // 获取今日运势
+        async function getTodayFortune() {
+            const resultDiv = document.getElementById('todayFortuneResult');
+            resultDiv.style.display = 'block';
+            resultDiv.textContent = '正在获取今日运势...';
+            resultDiv.className = 'result';
+            
+            try {
+                const response = await fetch(`${API_BASE}/fortune/today-fortune`);
+                const data = await response.json();
+                
+                if (data.code === 200) {
+                    resultDiv.textContent = data.data;
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.textContent = `错误: ${data.message}`;
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                resultDiv.textContent = `请求失败: ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+        
+        // 时间转换函数
+        function convertTimeToChinese(time) {
+            const hour = parseInt(time.split(':')[0]);
+            const timeMap = {
+                23: '子时', 0: '子时', 1: '丑时', 2: '丑时',
+                3: '寅时', 4: '寅时', 5: '卯时', 6: '卯时',
+                7: '辰时', 8: '辰时', 9: '巳时', 10: '巳时',
+                11: '午时', 12: '午时', 13: '未时', 14: '未时',
+                15: '申时', 16: '申时', 17: '酉时', 18: '酉时',
+                19: '戌时', 20: '戌时', 21: '亥时', 22: '亥时'
+            };
+            return timeMap[hour] || '午时';
+        }
+        
+        // 命理计算
+        async function calculateFortune() {
+            const resultDiv = document.getElementById('calculateResult');
+            resultDiv.style.display = 'block';
+            resultDiv.textContent = '正在计算命理信息...';
+            resultDiv.className = 'result';
+            
+            const birthTime = document.getElementById('birthTime').value;
+            const chineseBirthTime = convertTimeToChinese(birthTime);
+            
+            const requestData = {
+                userId: 1,
+                name: document.getElementById('userName').value,
+                birthDate: document.getElementById('birthDate').value,
+                birthTime: chineseBirthTime,
+                gender: document.getElementById('gender').value
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE}/fortune/calculate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.code === 200) {
+                    const result = data.data;
+                    const formatted = `
+姓名: ${requestData.name}
+生日: ${requestData.birthDate}
+农历: ${result.lunar}
+天干地支: ${result.ganZhi}
+五行属性: ${result.wuXing}
+五行缺失: ${result.wuXingLack || '无'}
+生肖: ${result.shengXiao}
+
+AI分析:
+${result.aiAnalysis}
+                    `;
+                    resultDiv.textContent = formatted;
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.textContent = `错误: ${data.message}`;
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                resultDiv.textContent = `请求失败: ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+        
+        // 姓名推荐
+        async function recommendNames() {
+            const resultDiv = document.getElementById('nameResult');
+            resultDiv.style.display = 'block';
+            resultDiv.textContent = '正在生成姓名推荐...';
+            resultDiv.className = 'result';
+            
+            const requestData = {
+                userId: 1,
+                surname: document.getElementById('surname').value,
+                wuXingLack: document.getElementById('wuXingLack').value,
+                ganZhi: "庚子年 戊子月 甲子日 甲子时"
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE}/fortune/recommend-names`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.code === 200) {
+                    const names = data.data;
+                    let formatted = '推荐姓名:\n\n';
+                    names.forEach((name, index) => {
+                        formatted += `${index + 1}. ${name.name}\n`;
+                        formatted += `   五行: ${name.wuXing}\n`;
+                        formatted += `   评分: ${name.score}分\n`;
+                        formatted += `   理由: ${name.reason}\n\n`;
+                    });
+                    resultDiv.textContent = formatted;
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.textContent = `错误: ${data.message}`;
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                resultDiv.textContent = `请求失败: ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+        
+        // 性能测试
+        async function performanceTest() {
+            const resultDiv = document.getElementById('performanceResult');
+            resultDiv.style.display = 'block';
+            resultDiv.textContent = '正在进行性能测试...';
+            resultDiv.className = 'result';
+            
+            const iterations = document.getElementById('iterations').value;
+            const delay = document.getElementById('delay').value;
+            
+            const startTime = Date.now();
+            
+            try {
+                const response = await fetch(`${API_BASE}/fortune/performance-test?iterations=${iterations}&delay=${delay}`);
+                const data = await response.json();
+                
+                const endTime = Date.now();
+                const clientTime = endTime - startTime;
+                
+                if (data.code === 200) {
+                    const result = data.data;
+                    const formatted = `
+🎯 性能测试结果:
+
+📊 测试参数:
+  - 迭代次数: ${result.iterations}
+  - 延迟时间: ${result.delayMs}ms
+
+⏱️ 时间统计:
+  - 服务器总耗时: ${result.totalTimeMs}ms
+  - 客户端总耗时: ${clientTime}ms
+  - 平均响应时间: ${result.avgTimeMs.toFixed(2)}ms
+  - 网络延迟: ${(clientTime - result.totalTimeMs)}ms
+
+🚀 性能指标:
+  - 服务器吞吐量: ${result.throughputPerSec.toFixed(2)} 次/秒
+  - 状态: ${result.status}
+  - 测试时间: ${new Date(result.timestamp).toLocaleString()}
+                    `;
+                    resultDiv.textContent = formatted;
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.textContent = `错误: ${data.message}`;
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                const endTime = Date.now();
+                const clientTime = endTime - startTime;
+                resultDiv.textContent = `请求失败: ${error.message}\n客户端耗时: ${clientTime}ms`;
+                resultDiv.className = 'result error';
+            }
+        }
+        
+        // 网络联通性测试
+        async function connectivityTest() {
+            const resultDiv = document.getElementById('connectivityResult');
+            resultDiv.style.display = 'block';
+            resultDiv.textContent = '正在测试网络联通性...';
+            resultDiv.className = 'result';
+            
+            const startTime = Date.now();
+            
+            try {
+                const response = await fetch(`${API_BASE}/fortune/connectivity-test`);
+                const data = await response.json();
+                
+                const endTime = Date.now();
+                const clientTime = endTime - startTime;
+                
+                if (data.code === 200) {
+                    const result = data.data;
+                    const formatted = `
+🌐 网络联通性测试结果:
+
+📡 连接状态:
+  - 状态: ${result.status}
+  - 服务器响应时间: ${result.responseTimeMs}ms
+  - 客户端总耗时: ${clientTime}ms
+  - 网络延迟: ${(clientTime - result.responseTimeMs)}ms
+
+💻 系统信息:
+  - Java版本: ${result.systemInfo.javaVersion}
+  - 操作系统: ${result.systemInfo.osName} ${result.systemInfo.osVersion}
+  - CPU核心数: ${result.systemInfo.cpuCores}
+
+🧠 内存信息:
+  - 总内存: ${result.memoryInfo.totalMemoryMB}MB
+  - 已用内存: ${result.memoryInfo.usedMemoryMB}MB
+  - 可用内存: ${result.memoryInfo.freeMemoryMB}MB
+  - 内存使用率: ${result.memoryInfo.memoryUsagePercent.toFixed(2)}%
+
+🔗 网络信息:
+  - 服务器地址: ${result.networkInfo.serverHost}:${result.networkInfo.serverPort}
+  - 协议: ${result.networkInfo.protocol}
+  - 请求方法: ${result.networkInfo.method}
+
+🕐 测试时间: ${new Date(result.timestamp).toLocaleString()}
+                    `;
+                    resultDiv.textContent = formatted;
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.textContent = `错误: ${data.message}`;
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                const endTime = Date.now();
+                const clientTime = endTime - startTime;
+                resultDiv.textContent = `连接失败: ${error.message}\n客户端耗时: ${clientTime}ms\n请检查网络连接和服务器状态`;
+                resultDiv.className = 'result error';
+            }
+        }
+        
+        // 页面加载时检查状态
+        window.onload = function() {
+            checkStatus();
+            // 每30秒检查一次状态
+            setInterval(checkStatus, 30000);
+        };
+    </script>
+</body>
+</html> 

@@ -14,7 +14,7 @@ interface ApiResponse<T = any> {
 }
 
 class Request {
-  private baseURL = 'https://api.yourdomain.com/api'
+  private baseURL = 'http://localhost:8080/api'
   
   private getToken(): string {
     return uni.getStorageSync('token') || ''
