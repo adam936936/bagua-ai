@@ -60,11 +60,5 @@ export const fortuneApi = {
     return response
   },
 
-  /**
-   * 保存历史记录
-   */
-  async saveHistory(historyData: any): Promise<any> {
-    const response = await request.post<any>('/fortune/save-history', historyData)
-    return response
-  }
+
 } 

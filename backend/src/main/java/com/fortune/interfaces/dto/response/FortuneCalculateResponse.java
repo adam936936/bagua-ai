@@ -26,6 +26,21 @@ public class FortuneCalculateResponse {
     private Long id;
     
     /**
+     * 用户姓名
+     */
+    private String userName;
+    
+    /**
+     * 出生日期
+     */
+    private String birthDate;
+    
+    /**
+     * 出生时辰
+     */
+    private String birthTime;
+    
+    /**
      * 农历日期
      */
     private String lunar;

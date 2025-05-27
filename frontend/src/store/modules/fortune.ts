@@ -13,6 +13,12 @@ export const useFortuneStore = defineStore('fortune', () => {
   const result = ref<any>(null)
   const todayFortune = ref('')
   const historyList = ref<any[]>([])
+  const historyPagination = ref({
+    total: 0,
+    page: 1,
+    size: 10,
+    totalPages: 0
+  })
   const recommendedNames = ref<string[]>([])
   const isVip = ref(false)
   const loading = ref(false)
@@ -38,6 +44,7 @@ export const useFortuneStore = defineStore('fortune', () => {
     loading.value = true
     try {
       const response = await fortuneApi.calculate({
+        userId: userStore.getCurrentUserId,
         userName: userName.value,
         birthDate: birthDate.value,
         birthTime: birthTime.value
@@ -53,22 +60,8 @@ export const useFortuneStore = defineStore('fortune', () => {
         // 消耗分析次数
         userStore.consumeAnalysisCount()
         
-        // 保存历史记录
-        try {
-          await fortuneApi.saveHistory({
-            userId: userStore.getCurrentUserId.toString(),
-            userName: userName.value,
-            birthDate: birthDate.value,
-            birthTime: birthTime.value,
-            result: response.data
-          })
-        } catch (historyError) {
-          console.error('保存历史记录失败:', historyError)
-          // 历史记录保存失败不影响主流程
-        }
-        
-        // 刷新历史记录
-        await loadHistory()
+        // 刷新历史记录（后端calculate接口已自动保存）
+        await loadHistory(1) // 重新加载第一页
       } else {
         console.error('API响应格式错误:', response)
         throw new Error(response?.message || '分析失败')
@@ -108,33 +101,69 @@ export const useFortuneStore = defineStore('fortune', () => {
   }
 
   // 获取历史记录
-  async function loadHistory() {
+  async function loadHistory(page: number = 1, size: number = 10) {
     const userStore = useUserStore()
     try {
       const userId = userStore.getCurrentUserId
-      const response = await fortuneApi.getHistory(userId)
+      const response = await fortuneApi.getHistory(userId, page, size)
+      
+      console.log('历史记录API响应:', response)
+      
       // 正确提取data字段
-      historyList.value = response.data || []
+      if (response && response.code === 200 && response.data) {
+        const data = response.data
+        historyList.value = data.list || []
+        historyPagination.value = {
+          total: data.total || 0,
+          page: data.page || 1,
+          size: data.size || 10,
+          totalPages: data.totalPages || 0
+        }
+        console.log('历史记录数据:', historyList.value)
+        console.log('分页信息:', historyPagination.value)
+      } else {
+        historyList.value = []
+        historyPagination.value = {
+          total: 0,
+          page: 1,
+          size: 10,
+          totalPages: 0
+        }
+      }
     } catch (error) {
       console.error('获取历史记录失败:', error)
       historyList.value = []
+      historyPagination.value = {
+        total: 0,
+        page: 1,
+        size: 10,
+        totalPages: 0
+      }
     }
   }
 
   // AI推荐姓名
   async function loadRecommendNames() {
-    if (!result.value || !result.value.wuXingLack) return
+    if (!result.value) return
     
     const userStore = useUserStore()
     loading.value = true
     try {
       const response = await fortuneApi.recommendNames({
-        wuXingLack: result.value.wuXingLack,
-        ganZhi: result.value.ganZhi,
+        wuXingLack: result.value.wuXingLack || '无',
+        ganZhi: result.value.ganZhi || '',
         surname: userName.value ? userName.value.charAt(0) : '李'
       })
-      // 正确提取data字段
-      recommendedNames.value = response.data?.map(item => item.name) || []
+      
+      console.log('推荐姓名API响应:', response)
+      
+      // 后端返回的是字符串数组，直接使用
+      if (response && response.code === 200 && response.data) {
+        recommendedNames.value = Array.isArray(response.data) ? response.data : []
+        console.log('推荐姓名:', recommendedNames.value)
+      } else {
+        recommendedNames.value = []
+      }
     } catch (error) {
       console.error('获取推荐姓名失败:', error)
       recommendedNames.value = []
@@ -159,6 +188,7 @@ export const useFortuneStore = defineStore('fortune', () => {
     result,
     todayFortune,
     historyList,
+    historyPagination,
     recommendedNames,
     isVip,
     loading,

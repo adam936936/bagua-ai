@@ -1,7 +1,7 @@
 server:
   port: 8080
   servlet:
-    context-path: /
+    context-path: /api
 
 spring:
   application:
@@ -12,7 +12,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/fortune_db?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
     username: root
-    password: 123456
+    password: 
     hikari:
       minimum-idle: 5
       maximum-pool-size: 20
@@ -81,6 +81,15 @@ fortune:
   wechat:
     app-id: ${WECHAT_APP_ID:your-wechat-app-id}
     app-secret: ${WECHAT_APP_SECRET:your-wechat-app-secret}
+
+# 微信支付配置
+wechat:
+  pay:
+    app-id: ${WECHAT_PAY_APP_ID:your-wechat-app-id}
+    mch-id: ${WECHAT_PAY_MCH_ID:your-merchant-id}
+    api-key: ${WECHAT_PAY_API_KEY:your-api-key}
+    notify-url: ${WECHAT_PAY_NOTIFY_URL:https://your-domain.com/api/vip/notify}
+    cert-path: ${WECHAT_PAY_CERT_PATH:classpath:cert/apiclient_cert.p12}
     
 # Swagger配置
 springfox:

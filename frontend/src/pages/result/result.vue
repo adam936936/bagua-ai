@@ -32,6 +32,7 @@
       <view class="user-info">
         <text class="user-name">{{ result.userName }}</text>
         <text class="birth-info">{{ result.birthDate }} {{ result.birthTime }}</text>
+        <text class="test-time">测算时间：{{ formatTestTime(result.createTime) }}</text>
       </view>
       
       <view class="basic-info">
@@ -67,7 +68,9 @@
       <view class="names-section" v-if="showRecommendNames && recommendedNames.length > 0">
         <text class="names-title">💎 AI推荐姓名</text>
         <view class="names-list">
-          <text class="name-item" v-for="(item, index) in recommendedNames" :key="index">{{ item }}</text>
+          <view class="name-item" v-for="(item, index) in recommendedNames" :key="index">
+            {{ item }}
+          </view>
         </view>
       </view>
     </view>
@@ -102,6 +105,8 @@
         <text class="qr-tip">长按保存二维码，分享给朋友</text>
       </view>
     </view>
+    
+    <canvas canvas-id="resultCanvas" id="resultCanvas" style="width:750rpx;height:1200rpx;position:absolute;left:-9999rpx;top:-9999rpx;z-index:-1;"></canvas>
   </view>
 </template>
 
@@ -120,10 +125,15 @@ const loading = computed(() => fortuneStore.loading)
 const showShareMenu = ref(false)
 const showRecommendNames = ref(false)
 const showQRCode = ref(false)
-const qrCodeUrl = ref('')
+const qrCodeUrl = ref('/static/qrcode.png')
 
 // 页面加载时检查是否有分析结果
 onMounted(() => {
+  // 确保隐藏任何可能残留的loading
+  uni.hideLoading()
+  
+  console.log('Result页面加载，当前result:', result.value)
+  
   if (!result.value) {
     uni.showToast({
       title: '暂无分析结果，请先进行分析',
@@ -206,17 +216,75 @@ const reAnalysis = () => {
 
 // 保存结果
 const saveResult = () => {
-  uni.showToast({
-    title: '结果已保存到历史记录',
-    icon: 'success'
-  })
-}
+  uni.showLoading({ title: '生成图片中...' });
+  const ctx = uni.createCanvasContext('resultCanvas');
+  // 绘制白色背景
+  ctx.setFillStyle('#fff');
+  ctx.fillRect(0, 0, 750, 1200);
+  // 绘制分析结果内容（这里只做简单示例，实际可根据页面内容调整位置和样式）
+  ctx.setFontSize(36);
+  ctx.setFillStyle('#764ba2');
+  ctx.fillText('AI分析报告', 40, 80);
+  ctx.setFontSize(28);
+  ctx.setFillStyle('#333');
+  ctx.fillText(result.value.userName || '', 40, 140);
+  ctx.fillText(result.value.birthDate + ' ' + result.value.birthTime, 40, 190);
+  ctx.fillText('八字：' + (result.value.ganZhi || ''), 40, 240);
+  ctx.fillText('五行缺失：' + (result.value.wuXingLack || ''), 40, 290);
+  ctx.setFontSize(24);
+  ctx.setFillStyle('#666');
+  ctx.fillText(result.value.aiAnalysis ? result.value.aiAnalysis.substring(0, 40) + '...' : '', 40, 340);
+  // 绘制推荐姓名
+  ctx.setFontSize(28);
+  ctx.setFillStyle('#764ba2');
+  ctx.fillText('AI推荐姓名：', 40, 400);
+  let x = 200;
+  let y = 400;
+  (recommendedNames.value || []).forEach((name, idx) => {
+    ctx.setFillStyle('#e0e7ff');
+    ctx.fillRect(x, y - 28, 120, 40);
+    ctx.setFillStyle('#764ba2');
+    ctx.fillText(name, x + 10, y);
+    x += 140;
+    if (x > 600) { x = 200; y += 60; }
+  });
+  // 绘制二维码
+  ctx.drawImage(qrCodeUrl.value, 550, 1050, 150, 150);
+  ctx.draw(false, () => {
+    uni.canvasToTempFilePath({
+      canvasId: 'resultCanvas',
+      success: (res) => {
+        uni.saveImageToPhotosAlbum({
+          filePath: res.tempFilePath,
+          success: () => {
+            uni.hideLoading();
+            uni.showToast({ title: '已保存到相册', icon: 'success' });
+          },
+          fail: () => { uni.hideLoading(); }
+        });
+      },
+      fail: () => { uni.hideLoading(); }
+    });
+  });
+};
 
 // 返回首页
 const goHome = () => {
   uni.switchTab({
     url: '/pages/index/index'
   })
+}
+
+// 格式化测算时间
+const formatTestTime = (timeStr: string) => {
+  if (!timeStr) return ''
+  const date = new Date(timeStr)
+  const year = date.getFullYear()
+  const month = (date.getMonth() + 1).toString().padStart(2, '0')
+  const day = date.getDate().toString().padStart(2, '0')
+  const hour = date.getHours().toString().padStart(2, '0')
+  const minute = date.getMinutes().toString().padStart(2, '0')
+  return `${year}-${month}-${day} ${hour}:${minute}`
 }
 </script>
 
@@ -326,6 +394,13 @@ const goHome = () => {
     display: block;
     font-size: 28rpx;
     color: #666;
+    margin-bottom: 8rpx;
+  }
+  
+  .test-time {
+    display: block;
+    font-size: 24rpx;
+    color: #999;
   }
 }
 
@@ -395,27 +470,33 @@ const goHome = () => {
 }
 
 .names-section {
+  margin-top: 40rpx;
   .names-title {
-    display: block;
     font-size: 32rpx;
     font-weight: bold;
-    color: #333;
+    color: #764ba2;
     margin-bottom: 20rpx;
+    display: block;
+    text-align: center;
   }
-  
   .names-list {
     display: flex;
     flex-wrap: wrap;
-    gap: 15rpx;
-    
-    .name-item {
-      background: #f8f9ff;
-      color: #667eea;
-      padding: 15rpx 25rpx;
-      border-radius: 25rpx;
-      font-size: 28rpx;
-      font-weight: 500;
-    }
+    justify-content: center;
+    gap: 24rpx 32rpx;
+    margin-top: 10rpx;
+  }
+  .name-item {
+    background: linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 100%);
+    color: #764ba2;
+    font-size: 30rpx;
+    font-weight: 500;
+    border-radius: 32rpx;
+    padding: 18rpx 38rpx;
+    margin-bottom: 16rpx;
+    box-shadow: 0 4rpx 16rpx rgba(118, 75, 162, 0.08);
+    border: 1rpx solid #d1c4e9;
+    text-align: center;
   }
 }
 

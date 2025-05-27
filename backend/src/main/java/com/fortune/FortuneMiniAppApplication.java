@@ -12,7 +12,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
  * @since 2024-01-01
  */
 @SpringBootApplication
-@MapperScan("com.fortune.infrastructure.persistence.mapper")
+@MapperScan("com.fortune.infrastructure.persistence")
 @EnableAsync
 public class FortuneMiniAppApplication {
 

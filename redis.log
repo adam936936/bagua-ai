@@ -14,3 +14,9 @@
 2119:M 26 May 2025 08:55:19.121 # WARNING: The TCP backlog setting of 511 cannot be enforced because kern.ipc.somaxconn is set to the lower value of 128.
 2119:M 26 May 2025 08:55:19.121 * Server initialized
 2119:M 26 May 2025 08:55:19.122 * Ready to accept connections tcp
+2119:signal-handler (1748286604) Received SIGTERM scheduling shutdown...
+2119:M 27 May 2025 03:10:04.522 * User requested shutdown...
+2119:M 27 May 2025 03:10:04.522 * Saving the final RDB snapshot before exiting.
+2119:M 27 May 2025 03:10:04.542 * DB saved on disk
+2119:M 27 May 2025 03:10:04.543 * Removing the pid file.
+2119:M 27 May 2025 03:10:04.546 # Redis is now ready to exit, bye bye...

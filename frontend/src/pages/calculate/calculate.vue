@@ -171,20 +171,23 @@ const onCalculate = async () => {
     // 调用分析接口
     await fortuneStore.doCalculate()
     
-    // 隐藏加载提示
-    uni.hideLoading()
-    
     // 检查分析结果
     if (fortuneStore.result) {
+      // 隐藏加载提示
+      uni.hideLoading()
+      
       // 分析成功，跳转到结果页面
       uni.navigateTo({
         url: '/pages/result/result'
       })
     } else {
+      // 隐藏加载提示
+      uni.hideLoading()
       throw new Error('分析结果为空')
     }
   } catch (error) {
     console.error('分析失败:', error)
+    // 确保隐藏加载提示
     uni.hideLoading()
     
     uni.showModal({
