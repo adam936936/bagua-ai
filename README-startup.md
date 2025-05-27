@@ -79,8 +79,21 @@ npm install
 - [ ] Node.js环境正常
 - [ ] 前端依赖已安装
 
+## 📅 开发规划
+
+### 每日规划文档
+- [每日开发规划](docs/daily-plan.md) - 记录每天的任务目标、进度和完成情况
+- [每日规划模板](docs/daily-plan-template.md) - 用于创建新的每日规划
+
+### 使用方法
+1. 每天开始开发前，复制模板创建新的每日规划
+2. 设定当天的任务目标和优先级
+3. 开发过程中记录进度和遇到的问题
+4. 结束时总结完成情况和心得体会
+
 ## 🆘 获取帮助
 
 如遇问题，请查看详细文档：
 - [完整启动指南](docs/startup-guide.md)
-- [错误总结报告](docs/error-summary.md) 
+- [错误总结报告](docs/error-summary.md)
+- [每日开发规划](docs/daily-plan.md) 
