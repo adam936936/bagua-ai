@@ -12,6 +12,7 @@ export const useFortuneStore = defineStore('fortune', () => {
   // 分析结果
   const result = ref<any>(null)
   const todayFortune = ref('')
+  const todayFortuneDate = ref('') // 缓存日期
   const historyList = ref<any[]>([])
   const historyPagination = ref({
     total: 0,
@@ -81,16 +82,26 @@ export const useFortuneStore = defineStore('fortune', () => {
 
   // 获取今日运势
   async function getTodayFortune() {
+    const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD格式
+    
+    // 检查缓存
+    if (todayFortuneDate.value === today && todayFortune.value) {
+      console.log('使用今日运势缓存')
+      return todayFortune.value
+    }
+    
     try {
       const response = await fortuneApi.getTodayFortune()
       // 正确提取data字段
       const fortune = response.data || '今日运势良好，万事如意！'
       todayFortune.value = fortune
+      todayFortuneDate.value = today // 更新缓存日期
       return fortune
     } catch (error) {
       console.error('获取今日运势失败:', error)
       const defaultFortune = '今日运势良好，万事如意！'
       todayFortune.value = defaultFortune
+      todayFortuneDate.value = today // 即使是默认值也要缓存
       return defaultFortune
     }
   }

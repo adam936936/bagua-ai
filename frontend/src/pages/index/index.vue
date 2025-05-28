@@ -96,11 +96,33 @@ const goToVip = () => {
 }
 
 const onTodayFortuneClick = async () => {
+  // 如果已经有运势内容，不重复请求
+  if (todayFortune.value && !fortuneLoading.value) {
+    return
+  }
+  
   fortuneLoading.value = true
   try {
-    await fortuneStore.loadTodayFortune()
+    // 添加最小加载时间，避免闪烁
+    const [result] = await Promise.all([
+      fortuneStore.loadTodayFortune(),
+      new Promise(resolve => setTimeout(resolve, 800))
+    ])
+    
+    if (!todayFortune.value) {
+      uni.showToast({ 
+        title: '获取运势失败，请稍后重试', 
+        icon: 'none',
+        duration: 2000
+      })
+    }
   } catch (e) {
-    uni.showToast({ title: '获取失败', icon: 'none' })
+    console.error('获取今日运势失败:', e)
+    uni.showToast({ 
+      title: '网络异常，请检查网络连接', 
+      icon: 'none',
+      duration: 2000
+    })
   } finally {
     fortuneLoading.value = false
   }
@@ -111,12 +133,14 @@ const onTodayFortuneClick = async () => {
 .container {
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 40rpx 0 0 0;
+  padding: 40rpx 0 60rpx 0;
 }
+
 .header {
   text-align: center;
   margin-bottom: 30rpx;
   padding-top: 40rpx;
+  
   .title {
     display: block;
     font-size: 56rpx;
@@ -124,40 +148,48 @@ const onTodayFortuneClick = async () => {
     color: white;
     margin-bottom: 10rpx;
   }
+  
   .subtitle {
     display: block;
     font-size: 28rpx;
-    color: rgba(255, 255, 255, 0.8);
+    color: rgba(255, 255, 255, 0.9);
   }
 }
+
 .today-fortune {
   background: rgba(255, 255, 255, 0.95);
   border-radius: 20rpx;
   padding: 40rpx;
   margin: 0 32rpx 32rpx 32rpx;
   box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+  
   .fortune-header {
     margin-bottom: 20rpx;
+    
     .fortune-title {
       font-size: 32rpx;
       font-weight: bold;
       color: #333;
     }
   }
+  
   .fortune-loading {
     margin-bottom: 20rpx;
+    
     .fortune-loading-text {
       font-size: 26rpx;
       color: #888;
       margin-bottom: 10rpx;
       display: block;
     }
+    
     .fortune-loading-bar {
       width: 100%;
       height: 18rpx;
       background: #e0e7ff;
       border-radius: 9rpx;
       overflow: hidden;
+      
       .fortune-loading-bar-inner {
         width: 60%;
         height: 100%;
@@ -167,6 +199,7 @@ const onTodayFortuneClick = async () => {
       }
     }
   }
+  
   .fortune-content {
     display: block;
     font-size: 28rpx;
@@ -174,6 +207,7 @@ const onTodayFortuneClick = async () => {
     color: #666;
     margin-bottom: 20rpx;
   }
+  
   .fortune-btn {
     width: 100%;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -186,30 +220,34 @@ const onTodayFortuneClick = async () => {
     margin-top: 10rpx;
   }
 }
+
 @keyframes loadingBar {
   0% { width: 30%; }
   100% { width: 90%; }
 }
+
 .features {
-  background: #f7f9fb;
-  border-radius: 24rpx;
-  margin: 0 32rpx 0 32rpx;
-  padding: 32rpx 0 20rpx 0;
-  box-shadow: none;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20rpx;
+  margin: 0 32rpx 32rpx 32rpx;
+  padding: 32rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+  
   .feature-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 32rpx 24rpx;
-    padding: 0 0;
+    gap: 24rpx;
   }
+  
   .feature-card {
     background: #fff;
-    border-radius: 24rpx;
-    box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.06);
+    border-radius: 16rpx;
+    box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.08);
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 38rpx 0 28rpx 0;
+    padding: 32rpx 16rpx;
+    
     .feature-icon {
       width: 80rpx;
       height: 80rpx;
@@ -219,47 +257,57 @@ const onTodayFortuneClick = async () => {
       justify-content: center;
       font-size: 40rpx;
       color: #fff;
-      margin-bottom: 18rpx;
+      margin-bottom: 16rpx;
       font-weight: bold;
     }
-    .bg-orange { background: linear-gradient(135deg, #ffb347 0%, #ff7e5f 100%); }
-    .bg-green { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
-    .bg-blue { background: linear-gradient(135deg, #43a3f7 0%, #38b6ff 100%); }
-    .bg-pink { background: linear-gradient(135deg, #ff6a88 0%, #ff99ac 100%); }
+    
+    .bg-orange { 
+      background: linear-gradient(135deg, #ffb347 0%, #ff7e5f 100%); 
+    }
+    
+    .bg-green { 
+      background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); 
+    }
+    
+    .bg-blue { 
+      background: linear-gradient(135deg, #43a3f7 0%, #38b6ff 100%); 
+    }
+    
+    .bg-pink { 
+      background: linear-gradient(135deg, #ff6a88 0%, #ff99ac 100%); 
+    }
+    
     .feature-title {
       font-size: 28rpx;
       font-weight: 600;
       color: #222;
-      margin-bottom: 6rpx;
+      margin-bottom: 8rpx;
     }
+    
     .feature-desc {
       font-size: 22rpx;
       color: #888;
+      text-align: center;
     }
   }
 }
+
 .start-action {
   width: 100%;
   margin: 48rpx 0 0 0;
   display: flex;
   justify-content: center;
+  
   .start-btn {
-    width: 92%;
-    background: linear-gradient(90deg, #7f7fd5 0%, #86a8e7 50%, #91eac9 100%);
-    color: #fff;
+    width: 600rpx;
+    height: 100rpx;
+    background: linear-gradient(135deg, #ff6a88 0%, #ff99ac 100%);
+    color: white;
     border: none;
-    border-radius: 60rpx;
-    font-size: 40rpx;
-    font-weight: 600;
-    padding: 32rpx 0;
-    box-shadow: 0 4rpx 24rpx rgba(118, 75, 162, 0.10);
-    letter-spacing: 2rpx;
-    transition: transform 0.1s;
-    font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
-  }
-  .start-btn:active {
-    transform: scale(0.97);
-    opacity: 0.92;
+    border-radius: 50rpx;
+    font-size: 32rpx;
+    font-weight: bold;
+    box-shadow: 0 8rpx 24rpx rgba(255, 106, 136, 0.4);
   }
 }
 </style> 

@@ -10,10 +10,13 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.Duration;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * DeepSeek AI服务
@@ -43,7 +46,21 @@ public class DeepSeekService {
     @Value("${fortune.deepseek.mock-mode:false}")
     private Boolean mockMode;
     
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
+    
+    // 今日运势缓存
+    private final Map<String, String> todayFortuneCache = new ConcurrentHashMap<>();
+    private String lastFortuneCacheDate = "";
+    
+    public DeepSeekService() {
+        this.restTemplate = new RestTemplate();
+        // 设置超时时间为5秒
+        this.restTemplate.getMessageConverters().forEach(converter -> {
+            if (converter instanceof org.springframework.http.converter.StringHttpMessageConverter) {
+                ((org.springframework.http.converter.StringHttpMessageConverter) converter).setDefaultCharset(java.nio.charset.StandardCharsets.UTF_8);
+            }
+        });
+    }
     
     /**
      * 生成命理分析
@@ -82,27 +99,48 @@ public class DeepSeekService {
     }
     
     /**
-     * 生成今日运势
+     * 生成今日运势（带缓存）
      */
     public String getTodayFortune() {
         System.out.println("调用DeepSeek生成今日运势");
         
+        String today = LocalDate.now().toString();
+        
+        // 检查缓存
+        if (today.equals(lastFortuneCacheDate) && todayFortuneCache.containsKey(today)) {
+            System.out.println("使用今日运势缓存");
+            return todayFortuneCache.get(today);
+        }
+        
+        // 清理过期缓存
+        if (!today.equals(lastFortuneCacheDate)) {
+            todayFortuneCache.clear();
+            lastFortuneCacheDate = today;
+        }
+        
         String prompt = "请生成一段今日运势分析，包含事业、财运、感情、健康等方面的建议，语言要温馨正面，字数控制在200字以内。";
         
         try {
-            String response = callDeepSeekApi(prompt);
+            String response = callDeepSeekApiWithTimeout(prompt, 5000); // 5秒超时
             System.out.println("DeepSeek今日运势响应：" + response);
+            
+            // 缓存结果
+            todayFortuneCache.put(today, response);
             return response;
         } catch (Exception e) {
             System.err.println("调用DeepSeek生成今日运势失败: " + e.getMessage());
-            return "今日运势良好，事业上会有新的机遇，财运稳中有升，感情方面需要多沟通理解，健康状况良好，建议保持积极乐观的心态。";
+            String defaultFortune = generateDefaultTodayFortune();
+            
+            // 缓存默认结果
+            todayFortuneCache.put(today, defaultFortune);
+            return defaultFortune;
         }
     }
     
     /**
-     * 调用DeepSeek API
+     * 调用DeepSeek API（带超时）
      */
-    private String callDeepSeekApi(String prompt) {
+    private String callDeepSeekApiWithTimeout(String prompt, int timeoutMs) {
         // 如果启用模拟模式，直接返回模拟数据
         if (mockMode) {
             System.out.println("模拟模式：跳过DeepSeek API调用");
@@ -129,8 +167,15 @@ public class DeepSeekService {
         
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
         
+        // 创建带超时的RestTemplate
+        RestTemplate timeoutRestTemplate = new RestTemplate();
+        timeoutRestTemplate.setRequestFactory(new org.springframework.http.client.SimpleClientHttpRequestFactory() {{
+            setConnectTimeout(timeoutMs);
+            setReadTimeout(timeoutMs);
+        }});
+        
         // 发送请求
-        ResponseEntity<String> response = restTemplate.postForEntity(apiUrl, entity, String.class);
+        ResponseEntity<String> response = timeoutRestTemplate.postForEntity(apiUrl, entity, String.class);
         
         if (response.getStatusCode() == HttpStatus.OK) {
             JSONObject jsonResponse = JSON.parseObject(response.getBody());
@@ -143,6 +188,28 @@ public class DeepSeekService {
         }
         
         throw new RuntimeException("DeepSeek API调用失败");
+    }
+    
+    /**
+     * 调用DeepSeek API
+     */
+    private String callDeepSeekApi(String prompt) {
+        return callDeepSeekApiWithTimeout(prompt, 30000); // 默认30秒超时
+    }
+    
+    /**
+     * 生成默认今日运势
+     */
+    private String generateDefaultTodayFortune() {
+        String[] fortunes = {
+            "【今日运势】🌟\n\n**事业**：今天思维敏捷，适合处理复杂问题，团队合作顺利，有望获得上级认可。\n\n**财运**：正财运佳，可能有意外收入，但需谨慎投资，避免冲动消费。\n\n**感情**：单身者桃花运旺，有机会遇到心仪对象；有伴者感情稳定，适合深入交流。\n\n**健康**：精神状态良好，注意劳逸结合，适量运动有助身心健康。\n\n✨ **幸运提示**：保持积极心态，好运自然来！",
+            "【今日运势】🌞\n\n**事业**：今天灵感充沛，适合推进创意项目，团队合作也会格外顺利。保持开放心态，机会可能来自意想不到的地方。\n\n**财运**：小有惊喜的一天，或许有额外收入或礼物。但消费需理性，避免冲动购物，长远规划更有利。\n\n**感情**：单身者易遇暖心互动，不妨主动表达好感；有伴侣者适合安排浪漫约会，细节最能打动人心。\n\n**健康**：注意劳逸结合，久坐后记得伸展身体。午后一杯花茶能舒缓压力，保持好心情是关键。\n\n✨ **幸运小贴士**：微笑会为你吸引好运，今天记得多分享快乐哦！",
+            "【今日运势】🍀\n\n**事业**：今天你充满能量，适合推进重要项目，团队合作会带来惊喜。保持积极沟通，灵感可能在不经意间闪现。\n\n**财运**：财务上有小惊喜，可能是额外收入或意外节省。理性消费的同时，不妨犒劳自己一下。\n\n**感情**：单身者有机会遇到有趣的人，放松心态展现真我。有伴者适合制造浪漫，小小举动能让感情升温。\n\n**健康**：注意劳逸结合，久坐后记得活动身体。一杯温水、一段散步，都能让你焕发活力。\n\n✨ **幸运小贴士**：今天适合穿亮色衣物，笑容会为你吸引好运！"
+        };
+        
+        // 根据日期选择不同的运势
+        int index = LocalDate.now().getDayOfYear() % fortunes.length;
+        return fortunes[index];
     }
     
     /**

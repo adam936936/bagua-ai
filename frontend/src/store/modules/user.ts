@@ -66,6 +66,17 @@ export const useUserStore = defineStore('user', {
     },
     
     /**
+     * 获取用户信息对象
+     */
+    userInfo(): { id: number | null; nickname: string; avatar: string } {
+      return {
+        id: this.userId,
+        nickname: this.nickName,
+        avatar: this.avatar
+      }
+    },
+    
+    /**
      * 是否可以进行分析（检查次数限制）
      */
     canAnalyze(): boolean {
@@ -249,6 +260,27 @@ export const useUserStore = defineStore('user', {
         // 如果初始化失败，清空本地存储
         this.logout()
       }
+    },
+
+    /**
+     * 加载用户信息（用于个人中心）
+     */
+    async loadUserInfo() {
+      await this.fetchProfile()
+    },
+
+    /**
+     * 更新头像
+     */
+    async updateAvatar(avatar: string) {
+      await this.updateProfile(undefined, avatar)
+    },
+
+    /**
+     * 更新昵称
+     */
+    async updateNickname(nickname: string) {
+      await this.updateProfile(nickname, undefined)
     }
   }
 }) 

@@ -53,28 +53,15 @@ public class VipController {
             
             logger.info("创建VIP订单，用户ID：{}，套餐类型：{}", userId, planType);
             
-            // 生成订单号
-            String orderNo = "VIP" + System.currentTimeMillis() + String.format("%04d", (int)(Math.random() * 10000));
+            // 创建订单
+            VipOrder vipOrder = vipService.createVipOrder(userId, planType);
             
-            // 获取套餐价格
-            Map<String, Object> plans = vipService.getPlanPrices();
-            Map<String, Object> planInfo = (Map<String, Object>) plans.get(planType);
-            if (planInfo == null) {
-                return ApiResponse.error("无效的套餐类型");
-            }
-            
-            BigDecimal amount = (BigDecimal) planInfo.get("price");
-            
-            // 创建订单对象
-            VipOrder vipOrder = new VipOrder(userId, orderNo, planType, amount);
-            
-            // 这里应该保存到数据库，暂时返回模拟数据
             Map<String, Object> result = new HashMap<>();
-            result.put("orderNo", orderNo);
-            result.put("amount", amount);
-            result.put("planType", planType);
+            result.put("orderNo", vipOrder.getOrderNo());
+            result.put("amount", vipOrder.getAmount());
+            result.put("planType", vipOrder.getPlanType());
             
-            logger.info("VIP订单创建成功，订单号：{}", orderNo);
+            logger.info("VIP订单创建成功，订单号：{}", vipOrder.getOrderNo());
             return ApiResponse.success(result);
             
         } catch (Exception e) {
@@ -120,11 +107,7 @@ public class VipController {
         try {
             logger.info("获取用户VIP状态，用户ID：{}", userId);
             
-            // 模拟VIP状态
-            Map<String, Object> status = new HashMap<>();
-            status.put("isVip", false);
-            status.put("planType", null);
-            status.put("expireTime", null);
+            Map<String, Object> status = vipService.getUserVipStatus(userId);
             
             return ApiResponse.success(status);
             
@@ -138,12 +121,11 @@ public class VipController {
      * 获取用户订单列表
      */
     @GetMapping("/orders/{userId}")
-    public ApiResponse<List<Map<String, Object>>> getUserOrders(@PathVariable Long userId) {
+    public ApiResponse<List<VipOrder>> getUserOrders(@PathVariable Long userId) {
         try {
             logger.info("获取用户订单列表，用户ID：{}", userId);
             
-            // 模拟订单列表
-            List<Map<String, Object>> orders = List.of();
+            List<VipOrder> orders = vipService.getUserOrders(userId);
             
             return ApiResponse.success(orders);
             
@@ -163,10 +145,12 @@ public class VipController {
             
             logger.info("模拟支付成功，订单号：{}", orderNo);
             
-            // 这里应该更新订单状态为已支付
-            // 暂时返回成功消息
-            
-            return ApiResponse.success("支付成功");
+            boolean success = vipService.mockPaymentSuccess(orderNo);
+            if (success) {
+                return ApiResponse.success("支付成功");
+            } else {
+                return ApiResponse.error("支付失败");
+            }
             
         } catch (Exception e) {
             logger.error("模拟支付失败", e);
