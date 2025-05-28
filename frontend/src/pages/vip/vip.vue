@@ -7,66 +7,51 @@
     
     <view class="vip-status" v-if="vipStore.isVip">
       <view class="vip-badge">
-        <text class="vip-icon">👑</text>
-        <text class="vip-text">VIP会员</text>
+        <view class="vip-icon-bg">
+          <text class="vip-icon">👑</text>
+        </view>
+        <view class="vip-info">
+          <text class="vip-text">VIP会员</text>
+          <text class="vip-plan">{{ getPlanName(vipStore.vipPlanType) }}</text>
+        </view>
       </view>
       <text class="vip-expire">有效期至：{{ vipStore.formattedExpireTime }}</text>
-      <text class="vip-plan">当前套餐：{{ getPlanName(vipStore.vipPlanType) }}</text>
     </view>
     
     <view class="privileges">
       <text class="privileges-title">VIP特权</text>
-      <view class="privilege-list">
-        <view class="privilege-item">
-          <text class="privilege-icon">🔮</text>
-          <view class="privilege-content">
-            <text class="privilege-name">无限次分析</text>
-            <text class="privilege-desc">每日不限次数的八字命理分析</text>
-          </view>
+      <view class="privilege-grid">
+        <view class="privilege-card">
+          <view class="privilege-icon bg-purple">🔮</view>
+          <text class="privilege-name">无限次分析</text>
+          <text class="privilege-desc">每日不限次数的八字命理分析</text>
           <text class="privilege-status" :class="{ active: vipStore.isVip }">
             {{ vipStore.isVip ? '已开通' : '未开通' }}
           </text>
         </view>
         
-        <view class="privilege-item">
-          <text class="privilege-icon">🤖</text>
-          <view class="privilege-content">
-            <text class="privilege-name">AI深度解读</text>
-            <text class="privilege-desc">更详细的AI个性分析报告</text>
-          </view>
+        <view class="privilege-card">
+          <view class="privilege-icon bg-blue">🤖</view>
+          <text class="privilege-name">AI深度解读</text>
+          <text class="privilege-desc">更详细的AI个性分析报告</text>
           <text class="privilege-status" :class="{ active: vipStore.isVip }">
             {{ vipStore.isVip ? '已开通' : '未开通' }}
           </text>
         </view>
         
-        <view class="privilege-item">
-          <text class="privilege-icon">✨</text>
-          <view class="privilege-content">
-            <text class="privilege-name">专属起名</text>
-            <text class="privilege-desc">基于五行缺失的专业起名服务</text>
-          </view>
+        <view class="privilege-card">
+          <view class="privilege-icon bg-green">✨</view>
+          <text class="privilege-name">专属起名</text>
+          <text class="privilege-desc">基于五行缺失的专业起名服务</text>
           <text class="privilege-status" :class="{ active: vipStore.isVip }">
             {{ vipStore.isVip ? '已开通' : '未开通' }}
           </text>
         </view>
         
-        <view class="privilege-item">
-          <text class="privilege-icon">📊</text>
-          <view class="privilege-content">
-            <text class="privilege-name">历史记录</text>
-            <text class="privilege-desc">无限保存分析历史记录</text>
-          </view>
-          <text class="privilege-status" :class="{ active: vipStore.isVip }">
-            {{ vipStore.isVip ? '已开通' : '未开通' }}
-          </text>
-        </view>
-        
-        <view class="privilege-item">
-          <text class="privilege-icon">🎯</text>
-          <view class="privilege-content">
-            <text class="privilege-name">专属客服</text>
-            <text class="privilege-desc">一对一专业命理咨询服务</text>
-          </view>
+        <view class="privilege-card">
+          <view class="privilege-icon bg-orange">📊</view>
+          <text class="privilege-name">历史记录</text>
+          <text class="privilege-desc">无限保存分析历史记录</text>
           <text class="privilege-status" :class="{ active: vipStore.isVip }">
             {{ vipStore.isVip ? '已开通' : '未开通' }}
           </text>
@@ -283,17 +268,17 @@ const viewOrders = async () => {
 .container {
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 40rpx 30rpx 120rpx;
-  position: relative;
+  padding: 40rpx 0 0 0;
 }
 
 .header {
   text-align: center;
-  margin-bottom: 40rpx;
+  margin-bottom: 30rpx;
+  padding-top: 40rpx;
   
   .title {
     display: block;
-    font-size: 48rpx;
+    font-size: 56rpx;
     font-weight: bold;
     color: white;
     margin-bottom: 10rpx;
@@ -307,46 +292,65 @@ const viewOrders = async () => {
 }
 
 .vip-status {
-  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+  background: rgba(255, 255, 255, 0.95);
   border-radius: 20rpx;
-  padding: 30rpx;
-  margin-bottom: 30rpx;
-  text-align: center;
-  box-shadow: 0 8rpx 32rpx rgba(255, 215, 0, 0.3);
+  padding: 40rpx;
+  margin: 0 32rpx 32rpx 32rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
   
   .vip-badge {
     display: flex;
     align-items: center;
-    justify-content: center;
-    margin-bottom: 15rpx;
+    margin-bottom: 20rpx;
     
-    .vip-icon {
-      font-size: 36rpx;
-      margin-right: 10rpx;
+    .vip-icon-bg {
+      width: 80rpx;
+      height: 80rpx;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 20rpx;
+      
+      .vip-icon {
+        font-size: 40rpx;
+        color: #8b4513;
+      }
     }
     
-    .vip-text {
-      font-size: 32rpx;
-      font-weight: bold;
-      color: #8b4513;
+    .vip-info {
+      flex: 1;
+      
+      .vip-text {
+        display: block;
+        font-size: 32rpx;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 5rpx;
+      }
+      
+      .vip-plan {
+        display: block;
+        font-size: 24rpx;
+        color: #666;
+      }
     }
   }
   
-  .vip-expire,
-  .vip-plan {
+  .vip-expire {
     display: block;
-    font-size: 26rpx;
-    color: #8b4513;
-    margin-bottom: 8rpx;
+    font-size: 28rpx;
+    color: #666;
+    text-align: center;
   }
 }
 
 .privileges {
-  background: white;
-  border-radius: 20rpx;
-  padding: 30rpx;
-  margin-bottom: 30rpx;
-  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+  background: #f7f9fb;
+  border-radius: 24rpx;
+  margin: 0 32rpx 32rpx 32rpx;
+  padding: 32rpx 0 20rpx 0;
   
   .privileges-title {
     display: block;
@@ -357,47 +361,59 @@ const viewOrders = async () => {
     text-align: center;
   }
   
-  .privilege-list {
-    .privilege-item {
+  .privilege-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24rpx;
+    padding: 0 32rpx;
+    
+    .privilege-card {
+      background: #fff;
+      border-radius: 24rpx;
+      box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.06);
       display: flex;
+      flex-direction: column;
       align-items: center;
-      padding: 20rpx 0;
-      border-bottom: 2rpx solid #f5f5f5;
-      
-      &:last-child {
-        border-bottom: none;
-      }
+      padding: 32rpx 20rpx 24rpx 20rpx;
+      text-align: center;
       
       .privilege-icon {
-        font-size: 36rpx;
-        margin-right: 20rpx;
         width: 60rpx;
-        text-align: center;
+        height: 60rpx;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28rpx;
+        color: #fff;
+        margin-bottom: 16rpx;
+        font-weight: bold;
       }
       
-      .privilege-content {
-        flex: 1;
-        
-        .privilege-name {
-          display: block;
-          font-size: 28rpx;
-          font-weight: 500;
-          color: #333;
-          margin-bottom: 5rpx;
-        }
-        
-        .privilege-desc {
-          display: block;
-          font-size: 24rpx;
-          color: #999;
-        }
+      .bg-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+      .bg-blue { background: linear-gradient(135deg, #43a3f7 0%, #38b6ff 100%); }
+      .bg-green { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+      .bg-orange { background: linear-gradient(135deg, #ffb347 0%, #ff7e5f 100%); }
+      
+      .privilege-name {
+        font-size: 24rpx;
+        font-weight: 600;
+        color: #222;
+        margin-bottom: 8rpx;
+      }
+      
+      .privilege-desc {
+        font-size: 20rpx;
+        color: #888;
+        line-height: 1.4;
+        margin-bottom: 12rpx;
       }
       
       .privilege-status {
-        font-size: 24rpx;
+        font-size: 20rpx;
         color: #ccc;
-        padding: 8rpx 16rpx;
-        border-radius: 12rpx;
+        padding: 6rpx 12rpx;
+        border-radius: 10rpx;
         background: #f5f5f5;
         
         &.active {
@@ -410,10 +426,10 @@ const viewOrders = async () => {
 }
 
 .pricing {
-  background: white;
+  background: rgba(255, 255, 255, 0.95);
   border-radius: 20rpx;
-  padding: 30rpx;
-  margin-bottom: 30rpx;
+  padding: 40rpx;
+  margin: 0 32rpx 32rpx 32rpx;
   box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
   
   .select-plan-section {
@@ -524,31 +540,39 @@ const viewOrders = async () => {
       }
     }
     
-         .plan-actions {
-       margin-top: 20rpx;
-       
-       .purchase-btn {
-         width: 100%;
-         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-         color: white;
-         border: none;
-         border-radius: 50rpx;
-         padding: 20rpx;
-         font-size: 28rpx;
-         font-weight: bold;
-         
-         &:disabled {
-           opacity: 0.6;
-         }
-       }
-     }
+    .plan-actions {
+      margin-top: 30rpx;
+      
+      .purchase-btn {
+        width: 100%;
+        background: linear-gradient(90deg, #7f7fd5 0%, #86a8e7 50%, #91eac9 100%);
+        color: #fff;
+        border: none;
+        border-radius: 60rpx;
+        font-size: 32rpx;
+        font-weight: 600;
+        padding: 24rpx 0;
+        box-shadow: 0 4rpx 24rpx rgba(118, 75, 162, 0.10);
+        letter-spacing: 2rpx;
+        
+        &:disabled {
+          opacity: 0.6;
+        }
+        
+        &:active {
+          transform: scale(0.97);
+          opacity: 0.92;
+        }
+      }
+    }
   }
 }
 
 .contact {
-  background: white;
+  background: rgba(255, 255, 255, 0.95);
   border-radius: 20rpx;
-  padding: 30rpx;
+  padding: 40rpx;
+  margin: 0 32rpx 32rpx 32rpx;
   box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
   
   .contact-title {
@@ -566,9 +590,10 @@ const viewOrders = async () => {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     border: none;
-    border-radius: 50rpx;
+    border-radius: 15rpx;
     padding: 20rpx;
     font-size: 28rpx;
+    font-weight: bold;
     margin-bottom: 15rpx;
     
     &:last-child {
@@ -577,7 +602,7 @@ const viewOrders = async () => {
   }
   
   .orders-btn {
-    background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
   }
 }
 

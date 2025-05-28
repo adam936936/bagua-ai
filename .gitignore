@@ -4,6 +4,9 @@ build/
 out/
 bin/
 dist/
+**/target/
+**/dist/
+**/build/
 
 # 日志文件
 *.log
@@ -78,6 +81,16 @@ yarn.lock
 .env.development.local
 .env.test.local
 .env.production.local
+
+# API密钥和敏感配置文件
+**/application-secret.yml
+**/application-private.yml
+**/*-secret.yml
+**/*-private.yml
+**/secrets.yml
+**/api-keys.yml
+**/.env.secret
+**/.env.private
 
 # 数据库文件
 *.db
