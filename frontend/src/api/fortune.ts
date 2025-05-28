@@ -27,17 +27,7 @@ export const fortuneApi = {
    * AI推荐姓名
    */
   async recommendNames(params: NameRecommendRequest): Promise<any> {
-    // 获取用户ID
-    let userId = uni.getStorageSync('userId')
-    if (!userId) {
-      userId = Date.now()
-      uni.setStorageSync('userId', userId)
-    }
-    
-    const response = await request.post<any>('/fortune/recommend-names', {
-      ...params,
-      userId: Number(userId)
-    })
+    const response = await request.post<any>('/fortune/recommend-names', params)
     return response
   },
   

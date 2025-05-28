@@ -147,13 +147,30 @@ public class FortuneController {
         log.info("获取AI推荐姓名，请求参数：{}", request);
         
         try {
-            String userName = (String) request.get("userName");
-            String birthDate = (String) request.get("birthDate");
-            String birthTime = (String) request.get("birthTime");
-            String wuXingLack = (String) request.get("wuXingLack");
+            String surname = (String) request.get("surname");
+            Integer gender = (Integer) request.get("gender"); // 0-女 1-男
+            Integer birthYear = (Integer) request.get("birthYear");
+            Integer birthMonth = (Integer) request.get("birthMonth");
+            Integer birthDay = (Integer) request.get("birthDay");
+            Integer birthHour = (Integer) request.get("birthHour");
+            Long userId = request.get("userId") != null ? Long.valueOf(request.get("userId").toString()) : null;
+            
+            // 参数验证
+            if (surname == null || surname.trim().isEmpty()) {
+                return ApiResponse.error("姓氏不能为空");
+            }
+            if (gender == null || (gender != 0 && gender != 1)) {
+                return ApiResponse.error("性别参数错误");
+            }
+            if (birthYear == null || birthMonth == null || birthDay == null) {
+                return ApiResponse.error("出生日期不能为空");
+            }
+            
+            // 根据出生信息计算五行缺失
+            String wuXingLack = calculateWuXingLack(birthYear, birthMonth, birthDay, birthHour != null ? birthHour : 0);
             
             // 生成推荐姓名
-            java.util.List<String> recommendedNames = generateRecommendNames(userName, birthDate, birthTime, wuXingLack);
+            java.util.List<String> recommendedNames = generateRecommendNames(surname, gender, wuXingLack);
             
             return ApiResponse.success(recommendedNames);
             
@@ -161,6 +178,166 @@ public class FortuneController {
             log.error("获取AI推荐姓名失败", e);
             return ApiResponse.error("获取推荐姓名失败：" + e.getMessage());
         }
+    }
+    
+    /**
+     * 计算五行缺失
+     */
+    private String calculateWuXingLack(int year, int month, int day, int hour) {
+        // 精确的五行计算逻辑，基于天干地支
+        
+        // 天干五行：甲乙木，丙丁火，戊己土，庚辛金，壬癸水
+        String[] tianGan = {"甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"};
+        String[] tianGanWuXing = {"木", "木", "火", "火", "土", "土", "金", "金", "水", "水"};
+        
+        // 地支五行：寅卯木，巳午火，申酉金，亥子水，辰戌丑未土
+        String[] diZhi = {"子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"};
+        String[] diZhiWuXing = {"水", "土", "木", "木", "土", "火", "火", "土", "金", "金", "土", "水"};
+        
+        java.util.Map<String, Integer> wuXingCount = new java.util.HashMap<>();
+        wuXingCount.put("金", 0);
+        wuXingCount.put("木", 0);
+        wuXingCount.put("水", 0);
+        wuXingCount.put("火", 0);
+        wuXingCount.put("土", 0);
+        
+        // 年柱
+        int yearGanIndex = (year - 4) % 10;
+        int yearZhiIndex = (year - 4) % 12;
+        wuXingCount.put(tianGanWuXing[yearGanIndex], wuXingCount.get(tianGanWuXing[yearGanIndex]) + 1);
+        wuXingCount.put(diZhiWuXing[yearZhiIndex], wuXingCount.get(diZhiWuXing[yearZhiIndex]) + 1);
+        
+        // 月柱
+        int monthGanIndex = (yearGanIndex * 2 + month) % 10;
+        int monthZhiIndex = (month + 1) % 12;
+        wuXingCount.put(tianGanWuXing[monthGanIndex], wuXingCount.get(tianGanWuXing[monthGanIndex]) + 1);
+        wuXingCount.put(diZhiWuXing[monthZhiIndex], wuXingCount.get(diZhiWuXing[monthZhiIndex]) + 1);
+        
+        // 日柱
+        int dayOffset = calculateDayOffset(year, month, day);
+        int dayGanIndex = dayOffset % 10;
+        int dayZhiIndex = dayOffset % 12;
+        wuXingCount.put(tianGanWuXing[dayGanIndex], wuXingCount.get(tianGanWuXing[dayGanIndex]) + 1);
+        wuXingCount.put(diZhiWuXing[dayZhiIndex], wuXingCount.get(diZhiWuXing[dayZhiIndex]) + 1);
+        
+        // 时柱
+        int timeGanIndex = (dayGanIndex * 2 + hour) % 10;
+        int timeZhiIndex = hour;
+        wuXingCount.put(tianGanWuXing[timeGanIndex], wuXingCount.get(tianGanWuXing[timeGanIndex]) + 1);
+        wuXingCount.put(diZhiWuXing[timeZhiIndex], wuXingCount.get(diZhiWuXing[timeZhiIndex]) + 1);
+        
+        // 找出缺失的五行
+        java.util.List<String> lackWuXing = new java.util.ArrayList<>();
+        for (String wx : new String[]{"金", "木", "水", "火", "土"}) {
+            if (wuXingCount.get(wx) == 0) {
+                lackWuXing.add(wx);
+            }
+        }
+        
+        return lackWuXing.isEmpty() ? "无" : String.join("", lackWuXing);
+    }
+    
+    /**
+     * 计算日期偏移量（用于日柱计算）
+     */
+    private int calculateDayOffset(int year, int month, int day) {
+        // 简化的日期偏移计算，实际应该使用更精确的万年历算法
+        int totalDays = 0;
+        
+        // 年份天数
+        for (int y = 1900; y < year; y++) {
+            totalDays += isLeapYear(y) ? 366 : 365;
+        }
+        
+        // 月份天数
+        int[] monthDays = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+        if (isLeapYear(year)) {
+            monthDays[1] = 29;
+        }
+        
+        for (int m = 1; m < month; m++) {
+            totalDays += monthDays[m - 1];
+        }
+        
+        totalDays += day;
+        
+        // 1900年1月1日为甲子日，偏移量为0
+        return (totalDays - 1) % 60;
+    }
+    
+    /**
+     * 判断是否为闰年
+     */
+    private boolean isLeapYear(int year) {
+        return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
+    }
+    
+    /**
+     * 生成推荐姓名
+     */
+    private java.util.List<String> generateRecommendNames(String surname, int gender, String wuXingLack) {
+        java.util.List<String> firstNames = new java.util.ArrayList<>();
+        
+        // 根据性别和五行缺失生成推荐名字
+        if (wuXingLack != null && !wuXingLack.isEmpty() && !"无".equals(wuXingLack)) {
+            // 根据缺失的五行推荐相应属性的字
+            if (wuXingLack.contains("木")) {
+                if (gender == 1) { // 男孩
+                    firstNames.addAll(java.util.Arrays.asList("梓轩", "林峰", "森茂", "柏涛", "桂华", "松明"));
+                } else { // 女孩
+                    firstNames.addAll(java.util.Arrays.asList("梓涵", "林薇", "森雅", "柳青", "桂花", "松雪"));
+                }
+            }
+            if (wuXingLack.contains("火")) {
+                if (gender == 1) {
+                    firstNames.addAll(java.util.Arrays.asList("炎彬", "焱辉", "烨华", "明亮", "光耀", "晨曦"));
+                } else {
+                    firstNames.addAll(java.util.Arrays.asList("炎婷", "焱雯", "烨琳", "明月", "光华", "晨露"));
+                }
+            }
+            if (wuXingLack.contains("土")) {
+                if (gender == 1) {
+                    firstNames.addAll(java.util.Arrays.asList("坤宇", "培杰", "垚鑫", "城峰", "墨轩", "圣贤"));
+                } else {
+                    firstNames.addAll(java.util.Arrays.asList("坤雅", "培蕾", "垚婷", "城雪", "墨兰", "圣洁"));
+                }
+            }
+            if (wuXingLack.contains("金")) {
+                if (gender == 1) {
+                    firstNames.addAll(java.util.Arrays.asList("锦程", "铭轩", "钰涵", "鑫磊", "铁军", "钢强"));
+                } else {
+                    firstNames.addAll(java.util.Arrays.asList("锦雯", "铭婷", "钰琳", "鑫蕾", "铁兰", "钢玉"));
+                }
+            }
+            if (wuXingLack.contains("水")) {
+                if (gender == 1) {
+                    firstNames.addAll(java.util.Arrays.asList("浩然", "润泽", "清源", "江河", "海洋", "波涛"));
+                } else {
+                    firstNames.addAll(java.util.Arrays.asList("浩雯", "润婷", "清雅", "江月", "海燕", "波澜"));
+                }
+            }
+        }
+        
+        // 如果没有缺失或者没有匹配到，提供通用推荐
+        if (firstNames.isEmpty()) {
+            if (gender == 1) { // 男孩
+                firstNames.addAll(java.util.Arrays.asList("瑞祥", "嘉豪", "志远", "文博", "俊杰", "天佑"));
+            } else { // 女孩
+                firstNames.addAll(java.util.Arrays.asList("瑞雯", "嘉怡", "志雅", "文静", "俊美", "天恩"));
+            }
+        }
+        
+        // 随机选择3个，确保每次推荐都有变化
+        java.util.Collections.shuffle(firstNames);
+        java.util.List<String> selectedNames = firstNames.subList(0, Math.min(3, firstNames.size()));
+        
+        // 组合姓氏和名字
+        java.util.List<String> fullNames = new java.util.ArrayList<>();
+        for (String firstName : selectedNames) {
+            fullNames.add(surname + firstName);
+        }
+        
+        return fullNames;
     }
     
     /**
@@ -254,55 +431,5 @@ public class FortuneController {
                            "感情婚姻：感情运势良好，建议多沟通理解，真诚待人。\n\n" +
                            "人生建议：保持积极乐观的心态，多学习充实自己。",
                            userName, ganZhi, shengXiao);
-    }
-    
-    /**
-     * 生成推荐姓名
-     */
-    private java.util.List<String> generateRecommendNames(String userName, String birthDate, String birthTime, String wuXingLack) {
-        java.util.List<String> firstNames = new java.util.ArrayList<>();
-        
-        // 提取用户姓氏（取第一个字符）
-        String surname = userName != null && !userName.isEmpty() ? userName.substring(0, 1) : "李";
-        
-        // 根据五行缺失生成推荐名字（只取名字部分）
-        if (wuXingLack != null && !wuXingLack.isEmpty() && !"无".equals(wuXingLack)) {
-            if (wuXingLack.contains("木")) {
-                firstNames.add("梓轩");
-                firstNames.add("林峰");
-                firstNames.add("森茂");
-            } else if (wuXingLack.contains("火")) {
-                firstNames.add("炎彬");
-                firstNames.add("焱辉");
-                firstNames.add("烨华");
-            } else if (wuXingLack.contains("土")) {
-                firstNames.add("坤宇");
-                firstNames.add("培杰");
-                firstNames.add("垚鑫");
-            } else if (wuXingLack.contains("金")) {
-                firstNames.add("锦程");
-                firstNames.add("铭轩");
-                firstNames.add("钰涵");
-            } else if (wuXingLack.contains("水")) {
-                firstNames.add("浩然");
-                firstNames.add("润泽");
-                firstNames.add("清源");
-            }
-        }
-        
-        // 如果没有缺失或者没有匹配到，提供通用推荐
-        if (firstNames.isEmpty()) {
-            firstNames.add("瑞祥");
-            firstNames.add("嘉豪");
-            firstNames.add("志远");
-        }
-        
-        // 组合姓氏和名字，只返回3个
-        java.util.List<String> fullNames = new java.util.ArrayList<>();
-        for (int i = 0; i < Math.min(3, firstNames.size()); i++) {
-            fullNames.add(surname + firstNames.get(i));
-        }
-        
-        return fullNames;
     }
 } 

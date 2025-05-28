@@ -220,6 +220,36 @@ public class DeepSeekService {
             return "【今日运势】🌟\n\n**事业**：今天思维敏捷，适合处理复杂问题，团队合作顺利，有望获得上级认可。\n\n**财运**：正财运佳，可能有意外收入，但需谨慎投资，避免冲动消费。\n\n**感情**：单身者桃花运旺，有机会遇到心仪对象；有伴者感情稳定，适合深入交流。\n\n**健康**：精神状态良好，注意劳逸结合，适量运动有助身心健康。\n\n✨ **幸运提示**：保持积极心态，好运自然来！";
         } else if (prompt.contains("命理分析")) {
             return "### 1. 性格特点\n您性格温和善良，心思细腻，富有同情心。具有很强的直觉力和洞察力，善于理解他人，人际关系和谐。\n\n### 2. 事业发展\n适合从事文化、教育、咨询或服务类工作。具备领导才能，但更适合幕后策划。建议发挥创意优势，稳步发展。\n\n### 3. 财运状况\n财运平稳，正财运较好，适合稳健投资。中年后财富积累会更加顺利，建议合理规划财务。\n\n### 4. 感情婚姻\n感情运势良好，容易获得异性好感。建议真诚待人，注重精神层面的交流，婚姻生活会很幸福。\n\n### 5. 健康状况\n整体健康状况良好，需注意情绪管理，保持规律作息，适度运动增强体质。\n\n### 6. 人生建议\n发挥自身优势，保持学习心态，多与正能量的人交往，人生道路会越走越宽广。";
+        } else if (prompt.contains("推荐") && prompt.contains("姓名")) {
+            // 从prompt中提取姓氏
+            String surname = "李"; // 默认姓氏
+            if (prompt.contains("姓氏：")) {
+                int start = prompt.indexOf("姓氏：") + 3;
+                int end = prompt.indexOf("\n", start);
+                if (end == -1) end = prompt.length();
+                surname = prompt.substring(start, end).trim();
+            }
+            
+            return String.format("[\n" +
+                "  {\n" +
+                "    \"name\": \"%s瑞祥\",\n" +
+                "    \"reason\": \"瑞祥寓意吉祥如意，五行属金，能够补充缺失的五行，带来好运\",\n" +
+                "    \"score\": 88,\n" +
+                "    \"wuXing\": \"金\"\n" +
+                "  },\n" +
+                "  {\n" +
+                "    \"name\": \"%s嘉豪\",\n" +
+                "    \"reason\": \"嘉豪寓意品德高尚、气度不凡，五行属木，有助于平衡五行\",\n" +
+                "    \"score\": 85,\n" +
+                "    \"wuXing\": \"木\"\n" +
+                "  },\n" +
+                "  {\n" +
+                "    \"name\": \"%s志远\",\n" +
+                "    \"reason\": \"志远寓意志向远大，五行属火，能够增强事业运势\",\n" +
+                "    \"score\": 87,\n" +
+                "    \"wuXing\": \"火\"\n" +
+                "  }\n" +
+                "]", surname, surname, surname);
         } else {
             return "感谢您的咨询，这是一个模拟响应。在实际应用中，这里会返回AI生成的专业内容。";
         }
@@ -392,25 +422,28 @@ public class DeepSeekService {
     private List<NameRecommendationResponse> generateDefaultNameRecommendations(String wuXingLack, String surname) {
         List<NameRecommendationResponse> recommendations = new ArrayList<>();
         
+        // 如果没有提供姓氏，使用默认姓氏
+        String actualSurname = (surname != null && !surname.isEmpty()) ? surname : "李";
+        
         recommendations.add(NameRecommendationResponse.builder()
-                .name("瑞祥")
-                .reason("寓意吉祥如意，能够补充五行缺失，带来好运")
+                .name(actualSurname + "瑞祥")
+                .reason("瑞祥寓意吉祥如意，五行属金，能够补充缺失的五行，带来好运")
                 .score(88)
                 .wuXing("金")
                 .build());
                 
         recommendations.add(NameRecommendationResponse.builder()
-                .name("智慧")
-                .reason("寓意聪明智慧，五行属水，有助于平衡五行")
+                .name(actualSurname + "嘉豪")
+                .reason("嘉豪寓意品德高尚、气度不凡，五行属木，有助于平衡五行")
                 .score(85)
-                .wuXing("水")
+                .wuXing("木")
                 .build());
                 
         recommendations.add(NameRecommendationResponse.builder()
-                .name("嘉怡")
-                .reason("寓意美好快乐，五行属木，能够增强运势")
+                .name(actualSurname + "志远")
+                .reason("志远寓意志向远大，五行属火，能够增强事业运势")
                 .score(87)
-                .wuXing("木")
+                .wuXing("火")
                 .build());
         
         return recommendations;

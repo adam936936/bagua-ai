@@ -40,6 +40,16 @@ spring:
     time-zone: GMT+8
     default-property-inclusion: non_null
 
+# 健康检查配置
+management:
+  health:
+    redis:
+      enabled: false  # 禁用Redis健康检查
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
 # MyBatis-Plus配置
 mybatis-plus:
   configuration:
@@ -76,7 +86,7 @@ fortune:
     model: deepseek-chat
     max-tokens: 1000
     temperature: 0.7
-    mock-mode: true  # 启用模拟模式，避免API调用延迟
+    mock-mode: false  # 关闭模拟模式，启用真正的API调用
   
   # 微信小程序配置
   wechat:

@@ -154,16 +154,25 @@ export const useFortuneStore = defineStore('fortune', () => {
   }
 
   // AI推荐姓名
-  async function loadRecommendNames() {
-    if (!result.value) return
-    
+  async function loadRecommendNames(params: {
+    surname: string
+    gender: number
+    birthYear: number
+    birthMonth: number
+    birthDay: number
+    birthHour?: number
+  }) {
     const userStore = useUserStore()
     loading.value = true
     try {
       const response = await fortuneApi.recommendNames({
-        wuXingLack: result.value.wuXingLack || '无',
-        ganZhi: result.value.ganZhi || '',
-        surname: userName.value ? userName.value.charAt(0) : '李'
+        surname: params.surname,
+        gender: params.gender,
+        birthYear: params.birthYear,
+        birthMonth: params.birthMonth,
+        birthDay: params.birthDay,
+        birthHour: params.birthHour || 0,
+        userId: userStore.getCurrentUserId
       })
       
       console.log('推荐姓名API响应:', response)

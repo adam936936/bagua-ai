@@ -5,6 +5,7 @@ export interface BirthInfo {
   birthDate: string
   birthTime: string
   userName?: string
+  userId?: number
 }
 
 /**
@@ -34,9 +35,13 @@ export interface NameRecommendation {
  * 姓名推荐请求参数
  */
 export interface NameRecommendRequest {
-  userId: number
-  wuXingLack: string
-  ganZhi: string
+  surname: string
+  gender: number
+  birthYear: number
+  birthMonth: number
+  birthDay: number
+  birthHour?: number
+  userId?: number
 }
 
 /**

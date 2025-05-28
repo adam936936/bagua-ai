@@ -35,6 +35,7 @@ com/fortune/infrastructure/utils/FortuneUtils.class
 com/fortune/infrastructure/persistence/VipOrderMapper.class
 com/fortune/interfaces/dto/response/NameRecommendationResponse.class
 com/fortune/interfaces/web/VipController.class
+com/fortune/infrastructure/external/DeepSeekService$1.class
 com/fortune/interfaces/web/FortuneController.class
 com/fortune/infrastructure/persistence/po/FortuneRecordPO.class
 com/fortune/interfaces/web/SimpleTestController.class

@@ -54,28 +54,42 @@
         </view>
       </view>
       
-      <!-- 八字信息显示 -->
-      <view class="form-section" v-if="hasFortuneData">
-        <text class="section-title">八字信息</text>
-        <view class="fortune-info">
-          <view class="info-row">
-            <text class="info-label">天干地支：</text>
-            <text class="info-value">{{ ganZhi || '暂无数据' }}</text>
+      <!-- 出生日期选择 -->
+      <view class="form-section">
+        <text class="section-title">出生日期</text>
+        <picker 
+          mode="date" 
+          :value="birthDate" 
+          @change="onDateChange"
+          :end="maxDate"
+        >
+          <view class="date-input">
+            {{ birthDate || '请选择出生日期' }}
           </view>
-          <view class="info-row">
-            <text class="info-label">五行缺失：</text>
-            <text class="info-value">{{ wuXingLack || '暂无数据' }}</text>
-          </view>
-        </view>
-        <text class="info-tip">💡 AI将根据您的五行缺失推荐合适的姓名</text>
+        </picker>
       </view>
       
-      <!-- 无八字数据提示 -->
-      <view class="form-section" v-else>
-        <view class="no-data-tip">
-          <text class="tip-icon">⚠️</text>
-          <text class="tip-text">暂无八字数据，请先进行八字分析</text>
-          <button class="go-analyze-btn" @tap="goToAnalyze">立即分析</button>
+      <!-- 出生时辰选择 -->
+      <view class="form-section">
+        <text class="section-title">出生时辰</text>
+        <picker 
+          mode="selector" 
+          :range="timeOptions" 
+          :value="selectedTimeIndex"
+          @change="onTimeChange"
+        >
+          <view class="time-input">
+            {{ selectedTime || '请选择出生时辰' }}
+          </view>
+        </picker>
+        <text class="time-tip">💡 精确的出生时辰对五行分析至关重要，影响天干地支排盘</text>
+      </view>
+      
+      <!-- 五行分析说明 -->
+      <view class="form-section">
+        <text class="section-title">🔮 五行起名原理</text>
+        <view class="principle-card">
+          <text class="principle-text">根据出生年月日时推算天干地支，分析五行（金木水火土）的强弱，通过姓名中的字来补足五行缺失，达到五行平衡，助运人生。</text>
         </view>
       </view>
       
@@ -86,7 +100,7 @@
         :disabled="!canRecommend || loading"
         @tap="getRecommendNames"
       >
-        {{ loading ? '推荐中...' : '获取AI推荐姓名' }}
+        {{ loading ? '分析五行推荐中...' : '🎯 获取AI五行起名' }}
       </button>
     </view>
     
@@ -126,21 +140,47 @@ const commonSurnames = ref(['李', '王', '张', '刘', '陈', '杨', '赵', '�
 const selectedSurname = ref('')
 const customSurname = ref('')
 const selectedGender = ref('')
+const birthDate = ref('')
 const selectedName = ref('')
+const selectedTimeIndex = ref(-1)
+const selectedTime = ref('')
+
+// 时辰选项
+const timeOptions = ref([
+  '子时 (23:00-01:00)',
+  '丑时 (01:00-03:00)', 
+  '寅时 (03:00-05:00)',
+  '卯时 (05:00-07:00)',
+  '辰时 (07:00-09:00)',
+  '巳时 (09:00-11:00)',
+  '午时 (11:00-13:00)',
+  '未时 (13:00-15:00)',
+  '申时 (15:00-17:00)',
+  '酉时 (17:00-19:00)',
+  '戌时 (19:00-21:00)',
+  '亥时 (21:00-23:00)'
+])
+
+// 最大日期（今天）
+const maxDate = ref('')
 
 // 计算属性
 const currentSurname = computed(() => customSurname.value || selectedSurname.value)
-const hasFortuneData = computed(() => !!fortuneStore.result)
-const ganZhi = computed(() => fortuneStore.result?.ganZhi)
-const wuXingLack = computed(() => fortuneStore.result?.wuXingLack)
 const recommendedNames = computed(() => fortuneStore.recommendedNames)
 const loading = computed(() => fortuneStore.loading)
 
 const canRecommend = computed(() => {
-  return currentSurname.value && selectedGender.value && hasFortuneData.value
+  return currentSurname.value && selectedGender.value && birthDate.value && selectedTime.value
 })
 
 onMounted(async () => {
+  // 设置最大日期为今天
+  const today = new Date()
+  const year = today.getFullYear()
+  const month = (today.getMonth() + 1).toString().padStart(2, '0')
+  const day = today.getDate().toString().padStart(2, '0')
+  maxDate.value = `${year}-${month}-${day}`
+  
   // 加载常用姓氏
   try {
     await fortuneStore.loadCommonSurnames()
@@ -170,6 +210,18 @@ const selectGender = (gender: string) => {
   selectedGender.value = gender
 }
 
+// 日期选择
+const onDateChange = (e: any) => {
+  birthDate.value = e.detail.value
+}
+
+// 时辰选择
+const onTimeChange = (e: any) => {
+  const index = e.detail.value
+  selectedTimeIndex.value = index
+  selectedTime.value = timeOptions.value[index]
+}
+
 // 选择姓名
 const selectName = (name: string) => {
   selectedName.value = name
@@ -180,10 +232,17 @@ const getRecommendNames = async () => {
   if (!canRecommend.value || loading.value) return
   
   try {
+    // 根据出生日期计算五行缺失
+    const birthInfo = parseBirthDate(birthDate.value)
+    const hourInfo = parseTimeInfo(selectedTime.value)
+    
     const params = {
       surname: currentSurname.value,
-      gender: selectedGender.value,
-      wuXingLack: wuXingLack.value
+      gender: selectedGender.value === 'male' ? 1 : 0,
+      birthYear: birthInfo.year,
+      birthMonth: birthInfo.month,
+      birthDay: birthInfo.day,
+      birthHour: hourInfo.hour
     }
     
     await fortuneStore.loadRecommendNames(params)
@@ -204,6 +263,24 @@ const getRecommendNames = async () => {
   }
 }
 
+// 解析出生日期
+const parseBirthDate = (dateStr: string) => {
+  const [year, month, day] = dateStr.split('-').map(Number)
+  return { year, month, day }
+}
+
+// 解析时辰信息
+const parseTimeInfo = (timeStr: string) => {
+  const timeMap: { [key: string]: number } = {
+    '子时': 0, '丑时': 1, '寅时': 2, '卯时': 3,
+    '辰时': 4, '巳时': 5, '午时': 6, '未时': 7,
+    '申时': 8, '酉时': 9, '戌时': 10, '亥时': 11
+  }
+  
+  const timeName = timeStr.split(' ')[0]
+  return { hour: timeMap[timeName] || 0 }
+}
+
 // 保存选择
 const saveName = () => {
   if (!selectedName.value) return
@@ -216,13 +293,6 @@ const saveName = () => {
     success: () => {
       // 可以跳转到其他页面或执行其他操作
     }
-  })
-}
-
-// 跳转到分析页面
-const goToAnalyze = () => {
-  uni.navigateTo({
-    url: '/pages/calculate/calculate'
   })
 }
 </script>
@@ -351,70 +421,76 @@ const goToAnalyze = () => {
   }
 }
 
-.fortune-info {
-  background: #f8f9ff;
+.date-input {
+  width: 100%;
+  height: 80rpx;
+  border: 2rpx solid #e0e0e0;
   border-radius: 10rpx;
-  padding: 25rpx;
-  margin-bottom: 15rpx;
+  padding: 0 20rpx;
+  font-size: 28rpx;
+  background: #f9f9f9;
+  display: flex;
+  align-items: center;
+  color: #333;
   
-  .info-row {
-    display: flex;
-    margin-bottom: 10rpx;
-    
-    &:last-child {
-      margin-bottom: 0;
-    }
-    
-    .info-label {
-      font-size: 26rpx;
-      color: #666;
-      min-width: 140rpx;
-    }
-    
-    .info-value {
-      font-size: 26rpx;
-      color: #333;
-      font-weight: 500;
-    }
+  &:empty::before {
+    content: '请选择出生日期';
+    color: #999;
   }
 }
 
-.info-tip {
+.date-tip {
   display: block;
   font-size: 24rpx;
   color: #667eea;
+  margin-top: 10rpx;
   line-height: 1.5;
 }
 
-.no-data-tip {
-  text-align: center;
-  padding: 40rpx 0;
+.time-input {
+  width: 100%;
+  height: 80rpx;
+  border: 2rpx solid #e0e0e0;
+  border-radius: 10rpx;
+  padding: 0 20rpx;
+  font-size: 28rpx;
+  background: #f9f9f9;
+  display: flex;
+  align-items: center;
+  color: #333;
   
-  .tip-icon {
-    font-size: 60rpx;
-    margin-bottom: 20rpx;
+  &:empty::before {
+    content: '请选择出生时辰';
+    color: #999;
   }
+}
+
+.time-tip {
+  display: block;
+  font-size: 24rpx;
+  color: #667eea;
+  margin-top: 10rpx;
+  line-height: 1.5;
+}
+
+.principle-card {
+  background: linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 100%);
+  border: 2rpx solid #667eea;
+  border-radius: 15rpx;
+  padding: 25rpx;
+  margin-top: 15rpx;
   
-  .tip-text {
-    display: block;
-    font-size: 28rpx;
-    color: #666;
-    margin-bottom: 30rpx;
-  }
-  
-  .go-analyze-btn {
-    background: #667eea;
-    color: white;
-    border: none;
-    border-radius: 25rpx;
-    padding: 15rpx 30rpx;
+  .principle-text {
     font-size: 26rpx;
+    color: #4a5568;
+    line-height: 1.6;
+    text-align: justify;
   }
 }
 
 .recommend-btn {
   width: 100%;
-  height: 80rpx;
+  height: 90rpx;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
@@ -423,8 +499,8 @@ const goToAnalyze = () => {
   font-weight: bold;
   
   &.disabled {
-    opacity: 0.6;
     background: #ccc;
+    color: #999;
   }
 }
 
@@ -438,76 +514,68 @@ const goToAnalyze = () => {
     font-size: 32rpx;
     font-weight: bold;
     color: #333;
-    margin-bottom: 30rpx;
     text-align: center;
+    margin-bottom: 30rpx;
   }
+}
+
+.names-list {
+  margin-bottom: 30rpx;
   
-  .names-list {
-    margin-bottom: 40rpx;
+  .name-item {
+    height: 80rpx;
+    border: 2rpx solid #e0e0e0;
+    border-radius: 10rpx;
+    margin-bottom: 15rpx;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 25rpx;
+    background: #f9f9f9;
     
-    .name-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 25rpx;
-      border: 2rpx solid #e0e0e0;
-      border-radius: 15rpx;
-      margin-bottom: 15rpx;
-      background: #f9f9f9;
-      
-      &:last-child {
-        margin-bottom: 0;
-      }
-      
-      &.selected {
-        border-color: #667eea;
-        background: #f8f9ff;
-      }
-      
-      .name-text {
-        font-size: 32rpx;
-        color: #333;
-        font-weight: 500;
-        
-        .selected & {
-          color: #667eea;
-          font-weight: bold;
-        }
-      }
-      
-      .name-check {
-        font-size: 28rpx;
-        color: #667eea;
-        font-weight: bold;
-      }
+    &.selected {
+      border-color: #667eea;
+      background: #f8f9ff;
+    }
+    
+    .name-text {
+      font-size: 28rpx;
+      color: #333;
+      font-weight: 500;
+    }
+    
+    .name-check {
+      font-size: 24rpx;
+      color: #667eea;
+      font-weight: bold;
     }
   }
+}
+
+.result-actions {
+  display: flex;
+  gap: 20rpx;
   
-  .result-actions {
-    display: flex;
-    gap: 20rpx;
+  .action-btn {
+    flex: 1;
+    height: 80rpx;
+    border: none;
+    border-radius: 10rpx;
+    font-size: 28rpx;
+    font-weight: bold;
     
-    .action-btn {
-      flex: 1;
-      height: 70rpx;
-      border: none;
-      border-radius: 15rpx;
-      font-size: 28rpx;
-      font-weight: bold;
+    &.secondary {
+      background: #f0f0f0;
+      color: #666;
+    }
+    
+    &.primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
       
-      &.secondary {
-        background: #f0f0f0;
-        color: #666;
-      }
-      
-      &.primary {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        
-        &[disabled] {
-          opacity: 0.6;
-          background: #ccc;
-        }
+      &:disabled {
+        background: #ccc;
+        color: #999;
       }
     }
   }
