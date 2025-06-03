@@ -82,7 +82,7 @@ yarn.lock
 .env.test.local
 .env.production.local
 
-# API密钥和敏感配置文件
+# API密钥和敏感配置文件（仅忽略包含敏感信息的配置）
 **/application-secret.yml
 **/application-private.yml
 **/*-secret.yml
@@ -118,11 +118,6 @@ yarn.lock
 *.crt
 *.p12
 *.jks
-
-# 应用特定文件
-application-local.yml
-application-dev.yml
-application-test.yml
 
 # 进程ID文件
 *.pid

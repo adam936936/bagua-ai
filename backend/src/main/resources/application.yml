@@ -7,12 +7,12 @@ spring:
   application:
     name: fortune-mini-app
   
-  # 数据库配置
+  # 默认数据库配置
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/fortune_db?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
-    username: root
-    password: 
+    url: jdbc:mysql://localhost:3306/fortune_db?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: fortune_user
+    password: fortune123456
     hikari:
       minimum-idle: 5
       maximum-pool-size: 20
@@ -20,13 +20,26 @@ spring:
       max-lifetime: 1800000
       connection-timeout: 30000
   
+  # JPA配置
+  jpa:
+    hibernate:
+      ddl-auto: update
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    show-sql: true
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+  
   # Redis配置
   redis:
     host: localhost
     port: 6379
     password: 
     database: 0
-    timeout: 3000ms
+    timeout: 5000ms
     lettuce:
       pool:
         max-active: 8
@@ -39,16 +52,6 @@ spring:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: GMT+8
     default-property-inclusion: non_null
-
-# 健康检查配置
-management:
-  health:
-    redis:
-      enabled: false  # 禁用Redis健康检查
-  endpoints:
-    web:
-      exposure:
-        include: health,info
 
 # MyBatis-Plus配置
 mybatis-plus:
@@ -64,11 +67,21 @@ mybatis-plus:
       logic-not-delete-value: 0
   mapper-locations: classpath*:/mapper/**/*.xml
 
+# 健康检查配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info"
+  endpoint:
+    health:
+      show-details: always
+
 # 日志配置
 logging:
   level:
-    com.fortune: DEBUG
-    org.springframework.web: DEBUG
+    com.fortune: INFO
+    org.springframework.web: INFO
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
 
@@ -76,8 +89,8 @@ logging:
 fortune:
   # JWT配置
   jwt:
-    secret: fortune-mini-app-secret-key-2024
-    expiration: 86400000 # 24小时
+    secret: ${JWT_SECRET:fortune-mini-app-secret-key-2024}
+    expiration: 86400
   
   # DeepSeek API配置
   deepseek:
@@ -86,7 +99,6 @@ fortune:
     model: deepseek-chat
     max-tokens: 1000
     temperature: 0.7
-    mock-mode: false  # 关闭模拟模式，启用真正的API调用
   
   # 微信小程序配置
   wechat:

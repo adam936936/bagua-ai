@@ -1,11 +1,25 @@
-# 使用阿里云OpenJDK 11作为基础镜像
-FROM registry.cn-hangzhou.aliyuncs.com/library/openjdk:11-jre-slim
+# 使用预构建的JAR文件，避免在容器内构建
+FROM openjdk:17-jdk-slim
+
+# 安装必要工具
+RUN apt-get update && apt-get install -y \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# 创建应用用户
+RUN groupadd -r app && useradd -r -g app app
 
 # 设置工作目录
 WORKDIR /app
 
-# 复制Maven构建的jar文件
-COPY target/fortune-mini-app-1.0.0.jar app.jar
+# 复制预构建的JAR文件
+COPY target/*.jar app.jar
+
+# 创建日志目录
+RUN mkdir -p /app/logs && chown -R app:app /app
+
+# 切换到应用用户
+USER app
 
 # 暴露端口
 EXPOSE 8080
@@ -14,7 +28,7 @@ EXPOSE 8080
 ENV JAVA_OPTS="-Xms512m -Xmx1024m -XX:+UseG1GC"
 
 # 健康检查
-HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=3 \
   CMD curl -f http://localhost:8080/api/actuator/health || exit 1
 
 # 启动应用

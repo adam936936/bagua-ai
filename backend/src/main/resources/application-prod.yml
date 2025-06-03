@@ -1,38 +1,61 @@
 server:
-  port: 8081
+  port: 8080
   servlet:
     context-path: /api
+  # 生产环境服务器配置
+  tomcat:
+    max-threads: 200
+    min-spare-threads: 10
+    connection-timeout: 5000ms
 
 spring:
   application:
     name: fortune-mini-app
   
-  # MySQL生产数据库配置
+  # 生产数据源配置
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/fortune_db?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
-    username: fortune_user
-    password: fortune_password_2024
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:fortune_db}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=true&allowPublicKeyRetrieval=true
+    username: ${MYSQL_USERNAME:fortune_user}
+    password: ${MYSQL_PASSWORD}
     hikari:
-      minimum-idle: 5
-      maximum-pool-size: 20
+      minimum-idle: 10
+      maximum-pool-size: 50
       idle-timeout: 600000
       max-lifetime: 1800000
       connection-timeout: 30000
+      leak-detection-threshold: 60000
   
-  # Redis配置
+  # 生产JPA配置
+  jpa:
+    hibernate:
+      ddl-auto: validate  # 生产环境使用validate
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    show-sql: false  # 生产环境不显示SQL
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    properties:
+      hibernate:
+        format_sql: false
+        use_sql_comments: false
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+  
+  # 生产Redis配置
   redis:
-    host: localhost
-    port: 6379
-    password: 
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
     database: 0
-    timeout: 3000ms
+    timeout: 5000ms
     lettuce:
       pool:
-        max-active: 8
+        max-active: 16
         max-wait: -1ms
         max-idle: 8
-        min-idle: 0
+        min-idle: 2
   
   # Jackson配置
   jackson:
@@ -44,8 +67,8 @@ spring:
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true
-    cache-enabled: true
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    cache-enabled: true  # 生产环境启用缓存
+    log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl  # 生产环境不输出SQL
   global-config:
     db-config:
       id-type: auto
@@ -54,51 +77,61 @@ mybatis-plus:
       logic-not-delete-value: 0
   mapper-locations: classpath*:/mapper/**/*.xml
 
+# 生产环境管理端点配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,metrics"  # 生产环境只暴露必要端点
+  endpoint:
+    health:
+      show-details: when_authorized  # 需要授权才显示详情
+  server:
+    port: 8081  # 管理端点使用不同端口
+
 # 生产环境日志配置
 logging:
   level:
     com.fortune: INFO
     org.springframework.web: WARN
-    org.springframework.jdbc: WARN
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+    root: WARN
   pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
-    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    console: '%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n'
+    file: '%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n'
   file:
-    name: logs/fortune-app.log
-    max-size: 100MB
-    max-history: 30
+    name: /app/logs/fortune-app.log
+  logback:
+    rollingpolicy:
+      max-file-size: 100MB
+      max-history: 30
 
-# 自定义配置
+# 生产环境自定义配置
 fortune:
   # JWT配置
   jwt:
-    secret: fortune-mini-app-secret-key-2024-prod
-    expiration: 86400000 # 24小时
+    secret: ${JWT_SECRET}  # 生产环境必须提供
+    expiration: 86400  # 24小时
   
   # DeepSeek API配置
   deepseek:
     api-url: https://api.deepseek.com/v1/chat/completions
-    api-key: ${DEEPSEEK_API_KEY:your-deepseek-api-key}
+    api-key: ${DEEPSEEK_API_KEY}  # 生产环境必须提供
     model: deepseek-chat
     max-tokens: 1000
     temperature: 0.7
-    mock-mode: false  # 生产环境关闭模拟模式
   
   # 微信小程序配置
   wechat:
-    app-id: ${WECHAT_APP_ID:your-wechat-app-id}
-    app-secret: ${WECHAT_APP_SECRET:your-wechat-app-secret}
+    app-id: ${WECHAT_APP_ID}  # 生产环境必须提供
+    app-secret: ${WECHAT_APP_SECRET}  # 生产环境必须提供
 
-# 管理端点配置
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics
-  endpoint:
-    health:
-      show-details: when-authorized
-  metrics:
-    export:
-      prometheus:
-        enabled: true 
+# 微信支付配置
+wechat:
+  pay:
+    app-id: ${WECHAT_PAY_APP_ID}
+    mch-id: ${WECHAT_PAY_MCH_ID}
+    api-key: ${WECHAT_PAY_API_KEY}
+    notify-url: ${WECHAT_PAY_NOTIFY_URL}
+    cert-path: ${WECHAT_PAY_CERT_PATH:classpath:cert/apiclient_cert.p12} 

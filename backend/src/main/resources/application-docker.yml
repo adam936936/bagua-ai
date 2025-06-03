@@ -7,12 +7,12 @@ spring:
   application:
     name: fortune-mini-app
   
-  # 数据源配置
+  # 数据源配置 - Docker容器间通信
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/fortune_db?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
-    username: fortune_user
-    password: fortune123456
+    url: jdbc:mysql://${MYSQL_HOST:mysql}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:fortune_db}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: ${MYSQL_USERNAME:fortune_user}
+    password: ${MYSQL_PASSWORD:fortune123456}
     hikari:
       minimum-idle: 5
       maximum-pool-size: 20
@@ -33,11 +33,11 @@ spring:
         format_sql: true
         use_sql_comments: true
   
-  # Redis配置
+  # Redis配置 - Docker容器间通信
   redis:
-    host: localhost
-    port: 6379
-    password: 
+    host: ${REDIS_HOST:redis}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:redis123456}
     database: 0
     timeout: 5000ms
     lettuce:
@@ -52,13 +52,6 @@ spring:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: GMT+8
     default-property-inclusion: non_null
-
-  # 开发工具配置
-  devtools:
-    restart:
-      enabled: true
-    livereload:
-      enabled: true
 
 # MyBatis-Plus配置
 mybatis-plus:
@@ -87,21 +80,19 @@ management:
 # 日志配置
 logging:
   level:
-    com.fortune: DEBUG
-    org.springframework.web: DEBUG
-    org.springframework.security: DEBUG
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    com.fortune: INFO
+    org.springframework.web: INFO
+    org.springframework.security: INFO
+    org.hibernate.SQL: INFO
     root: INFO
   pattern:
-    console: '%d{yyyy-MM-dd HH:mm:ss} - %msg%n'
-    file: '%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n'
+    console: '%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n'
 
 # 自定义配置
 fortune:
   # JWT配置
   jwt:
-    secret: ${JWT_SECRET:local-development-secret-key-for-testing-only}
+    secret: ${JWT_SECRET:docker-development-secret-key-for-testing-only}
     expiration: 86400
   
   # DeepSeek API配置
@@ -117,8 +108,11 @@ fortune:
     app-id: ${WECHAT_APP_ID:test-app-id}
     app-secret: ${WECHAT_APP_SECRET:test-app-secret}
 
-# Swagger配置
-springfox:
-  documentation:
-    swagger-ui:
-      enabled: true
+# 微信支付配置
+wechat:
+  pay:
+    app-id: ${WECHAT_PAY_APP_ID:test-app-id}
+    mch-id: ${WECHAT_PAY_MCH_ID:test-merchant-id}
+    api-key: ${WECHAT_PAY_API_KEY:test-api-key}
+    notify-url: ${WECHAT_PAY_NOTIFY_URL:http://localhost/api/vip/notify}
+    cert-path: ${WECHAT_PAY_CERT_PATH:classpath:cert/apiclient_cert.p12} 
