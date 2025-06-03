@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  # 后端应用（仅容器化应用本身）
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile.local
+    container_name: bagua-backend-local
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=local
+      - MYSQL_HOST=host.docker.internal  # 连接宿主机的MySQL
+      - MYSQL_PORT=3306
+      - MYSQL_DATABASE=fortune_db
+      - MYSQL_USERNAME=fortune_user
+      - MYSQL_PASSWORD=fortune123456
+      - REDIS_HOST=host.docker.internal  # 连接宿主机的Redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=redis123456
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-your-api-key}
+      - WECHAT_APP_ID=${WECHAT_APP_ID:-your-app-id}
+      - WECHAT_APP_SECRET=${WECHAT_APP_SECRET:-your-app-secret}
+      - JWT_SECRET=local-jwt-secret-key-for-development
+    networks:
+      - fortune-local
+
+networks:
+  fortune-local:
+    driver: bridge 
