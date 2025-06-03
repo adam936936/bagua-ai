@@ -7,12 +7,12 @@ spring:
   application:
     name: fortune-mini-app
   
-  # 使用H2内存数据库
+  # 数据源配置
   datasource:
-    driver-class-name: org.h2.Driver
-    url: jdbc:h2:mem:fortune_db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MySQL
-    username: sa
-    password: 
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/fortune_db?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: fortune_user
+    password: fortune123456
     hikari:
       minimum-idle: 5
       maximum-pool-size: 20
@@ -20,13 +20,18 @@ spring:
       max-lifetime: 1800000
       connection-timeout: 30000
   
-  # H2控制台配置
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
-      settings:
-        web-allow-others: true
+  # JPA配置
+  jpa:
+    hibernate:
+      ddl-auto: update
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    show-sql: true
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
   
   # Redis配置
   redis:
@@ -34,7 +39,7 @@ spring:
     port: 6379
     password: 
     database: 0
-    timeout: 3000ms
+    timeout: 5000ms
     lettuce:
       pool:
         max-active: 8
@@ -47,6 +52,13 @@ spring:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: GMT+8
     default-property-inclusion: non_null
+
+  # 开发工具配置
+  devtools:
+    restart:
+      enabled: true
+    livereload:
+      enabled: true
 
 # MyBatis-Plus配置
 mybatis-plus:
@@ -62,35 +74,49 @@ mybatis-plus:
       logic-not-delete-value: 0
   mapper-locations: classpath*:/mapper/**/*.xml
 
+# 管理端点配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+
 # 日志配置
 logging:
   level:
     com.fortune: DEBUG
     org.springframework.web: DEBUG
-    org.springframework.boot.autoconfigure: INFO
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    root: INFO
   pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    console: '%d{yyyy-MM-dd HH:mm:ss} - %msg%n'
+    file: '%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n'
 
 # 自定义配置
 fortune:
   # JWT配置
   jwt:
-    secret: fortune-mini-app-secret-key-2024
-    expiration: 86400000 # 24小时
+    secret: ${JWT_SECRET:local-development-secret-key-for-testing-only}
+    expiration: 86400
   
   # DeepSeek API配置
   deepseek:
     api-url: https://api.deepseek.com/v1/chat/completions
-    api-key: ${DEEPSEEK_API_KEY:your-deepseek-api-key}
+    api-key: ${DEEPSEEK_API_KEY:sk-test-key}
     model: deepseek-chat
     max-tokens: 1000
     temperature: 0.7
   
   # 微信小程序配置
   wechat:
-    app-id: ${WECHAT_APP_ID:your-wechat-app-id}
-    app-secret: ${WECHAT_APP_SECRET:your-wechat-app-secret}
-    
+    app-id: ${WECHAT_APP_ID:test-app-id}
+    app-secret: ${WECHAT_APP_SECRET:test-app-secret}
+
 # Swagger配置
 springfox:
   documentation:

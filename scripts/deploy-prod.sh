@@ -137,12 +137,23 @@ generate_ssl_cert() {
 
 # 构建应用
 build_application() {
+    if [[ "${SKIP_BUILD:-false}" == "true" ]]; then
+        log_info "跳过应用构建（SKIP_BUILD=true）"
+        return 0
+    fi
+    
     log_info "构建Spring Boot应用..."
     
     cd backend
     
-    # 清理并打包
-    if ./mvnw clean package -DskipTests -Pprod; then
+    # 清理并打包 - 优先使用mvnw，如果不存在则使用系统mvn
+    if [[ -f "./mvnw" ]]; then
+        build_cmd="./mvnw"
+    else
+        build_cmd="mvn"
+    fi
+    
+    if $build_cmd clean package -DskipTests -Pprod; then
         log_success "应用构建成功"
     else
         log_error "应用构建失败"
@@ -224,7 +235,7 @@ wait_for_services() {
     # 等待应用启动
     log_info "等待应用启动..."
     attempt=0
-    max_attempts=60  # 应用启动需要更长时间
+    max_attempts=120  # 应用启动需要更长时间，增加到120次（10分钟）
     while [[ $attempt -lt $max_attempts ]]; do
         if curl -f -s http://localhost:8080/api/actuator/health >/dev/null 2>&1; then
             log_success "应用已启动"
