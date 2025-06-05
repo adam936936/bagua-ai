@@ -131,4 +131,4 @@ coverage/
 # 其他临时文件
 ~
 .swp
-.swo 
+.swo backup/
