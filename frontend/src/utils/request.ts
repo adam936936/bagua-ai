@@ -14,6 +14,7 @@ interface ApiResponse<T = any> {
 }
 
 class Request {
+  // 本地开发环境 - 用于前后端联调测试
   private baseURL = 'http://localhost:8080/api'
   
   private getToken(): string {

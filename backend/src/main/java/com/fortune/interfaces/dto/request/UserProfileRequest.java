@@ -26,10 +26,15 @@ public class UserProfileRequest {
     /**
      * 用户昵称
      */
-    private String nickName;
+    private String nickname;
     
     /**
      * 用户头像
      */
     private String avatar;
+    
+    /**
+     * 手机号
+     */
+    private String phone;
 } 

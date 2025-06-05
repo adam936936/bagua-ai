@@ -1,3 +1,4 @@
+com/fortune/application/service/WechatAuthService.class
 com/fortune/infrastructure/config/WebConfig.class
 com/fortune/domain/model/VipOrder.class
 com/fortune/FortuneMiniAppApplication.class
@@ -13,6 +14,7 @@ com/fortune/domain/fortune/entity/FortuneRecord.class
 com/fortune/interfaces/dto/response/UserProfileResponse.class
 com/fortune/application/service/VipService.class
 com/fortune/application/command/RecommendNameCommand$RecommendNameCommandBuilder.class
+com/fortune/application/service/WechatAuthService$WechatAuthResult.class
 com/fortune/interfaces/dto/response/NameRecommendationResponse$NameRecommendationResponseBuilder.class
 com/fortune/interfaces/assembler/FortuneAssembler.class
 com/fortune/domain/fortune/valueobject/WuXingAnalysis$WuXingAnalysisBuilder.class
@@ -24,6 +26,7 @@ com/fortune/infrastructure/persistence/repository/FortuneRecordRepository.class
 com/fortune/domain/fortune/valueobject/BirthInfo.class
 com/fortune/interfaces/dto/response/UserProfileResponse$UserProfileResponseBuilder.class
 com/fortune/interfaces/dto/response/UserLoginResponse.class
+com/fortune/infrastructure/persistence/po/UserPO.class
 com/fortune/interfaces/web/UserController.class
 com/fortune/domain/fortune/valueobject/ShengXiao.class
 com/fortune/interfaces/dto/response/FortuneCalculateResponse.class
@@ -33,11 +36,13 @@ com/fortune/interfaces/web/TestController.class
 com/fortune/infrastructure/external/DeepSeekService.class
 com/fortune/infrastructure/utils/FortuneUtils.class
 com/fortune/infrastructure/persistence/VipOrderMapper.class
+com/fortune/application/service/JwtTokenService.class
 com/fortune/interfaces/dto/response/NameRecommendationResponse.class
 com/fortune/interfaces/web/VipController.class
 com/fortune/infrastructure/external/DeepSeekService$1.class
 com/fortune/interfaces/web/FortuneController.class
 com/fortune/infrastructure/persistence/po/FortuneRecordPO.class
+com/fortune/infrastructure/persistence/mapper/UserMapper.class
 com/fortune/interfaces/web/SimpleTestController.class
 com/fortune/interfaces/dto/response/VipStatusResponse.class
 com/fortune/infrastructure/persistence/mapper/FortuneRecordMapper.class

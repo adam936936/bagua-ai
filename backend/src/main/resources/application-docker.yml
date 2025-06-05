@@ -7,12 +7,12 @@ spring:
   application:
     name: fortune-mini-app
   
-  # 数据源配置 - Docker容器间通信
+  # 数据源配置 - 本地开发环境
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://${MYSQL_HOST:mysql}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:fortune_db}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
-    username: ${MYSQL_USERNAME:fortune_user}
-    password: ${MYSQL_PASSWORD:fortune123456}
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:fortune_db}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD:}
     hikari:
       minimum-idle: 5
       maximum-pool-size: 20
@@ -33,19 +33,25 @@ spring:
         format_sql: true
         use_sql_comments: true
   
-  # Redis配置 - Docker容器间通信
-  redis:
-    host: ${REDIS_HOST:redis}
-    port: ${REDIS_PORT:6379}
-    password: ${REDIS_PASSWORD:redis123456}
-    database: 0
-    timeout: 5000ms
-    lettuce:
-      pool:
-        max-active: 8
-        max-wait: -1ms
-        max-idle: 8
-        min-idle: 0
+  # 禁用Redis（开发环境）
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+  
+  # Redis配置 - 仅在生产环境启用
+  # redis:
+  #   host: ${REDIS_HOST:redis}
+  #   port: ${REDIS_PORT:6379}
+  #   password: ${REDIS_PASSWORD:redis123456}
+  #   database: 0
+  #   timeout: 5000ms
+  #   lettuce:
+  #     pool:
+  #       max-active: 8
+  #       max-wait: -1ms
+  #       max-idle: 8
+  #       min-idle: 0
   
   # Jackson配置
   jackson:

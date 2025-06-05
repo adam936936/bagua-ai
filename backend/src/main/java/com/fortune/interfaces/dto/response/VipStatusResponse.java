@@ -37,7 +37,12 @@ public class VipStatusResponse {
     /**
      * VIP过期时间
      */
-    private LocalDateTime vipExpireTime;
+    private LocalDateTime expireTime;
+    
+    /**
+     * 是否过期
+     */
+    private Boolean isExpired;
     
     /**
      * 剩余分析次数

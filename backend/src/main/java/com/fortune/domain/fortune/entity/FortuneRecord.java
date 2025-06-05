@@ -1,5 +1,6 @@
 package com.fortune.domain.fortune.entity;
 
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.fortune.domain.fortune.valueobject.*;
 import com.fortune.domain.shared.valueobject.BaseId;
 import lombok.Data;
@@ -16,6 +17,7 @@ import java.util.List;
  */
 @Data
 @NoArgsConstructor
+@TableName(value = "t_fortune_record")
 public class FortuneRecord {
     
     /**

@@ -1,5 +1,8 @@
 package com.fortune.interfaces.web;
 
+import com.fortune.application.service.WechatAuthService;
+import com.fortune.infrastructure.persistence.mapper.UserMapper;
+import com.fortune.infrastructure.persistence.po.UserPO;
 import com.fortune.interfaces.dto.request.WechatLoginRequest;
 import com.fortune.interfaces.dto.request.UserProfileRequest;
 import com.fortune.interfaces.dto.response.ApiResponse;
@@ -12,6 +15,9 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 用户管理控制器
@@ -26,29 +32,26 @@ import javax.validation.Valid;
 @RequiredArgsConstructor
 public class UserController {
     
+    private final WechatAuthService wechatAuthService;
+    private final UserMapper userMapper;
+    
     /**
      * 微信小程序登录
      */
     @PostMapping("/login")
-    public ApiResponse<UserLoginResponse> login(@Valid @RequestBody WechatLoginRequest request) {
+    public ApiResponse<Map<String, Object>> login(@Valid @RequestBody WechatLoginRequest request) {
         log.info("微信小程序登录，code：{}", request.getCode());
         
         try {
-            // TODO: 实现微信授权登录逻辑
-            // 1. 通过code获取openid和session_key
-            // 2. 查询或创建用户
-            // 3. 生成JWT token
+            // 调用微信认证服务
+            Map<String, Object> result = wechatAuthService.login(
+                request.getCode(), 
+                request.getNickName(), 
+                request.getAvatar()
+            );
             
-            // 临时模拟数据
-            UserLoginResponse response = UserLoginResponse.builder()
-                    .userId(System.currentTimeMillis())
-                    .openId("mock_openid_" + System.currentTimeMillis())
-                    .token("mock_token_" + System.currentTimeMillis())
-                    .isNewUser(true)
-                    .build();
-            
-            log.info("微信登录成功，用户ID：{}", response.getUserId());
-            return ApiResponse.success(response);
+            log.info("微信登录成功，用户ID：{}", result.get("userId"));
+            return ApiResponse.success(result);
             
         } catch (Exception e) {
             log.error("微信登录失败，错误信息：{}", e.getMessage(), e);
@@ -59,27 +62,30 @@ public class UserController {
     /**
      * 获取用户信息
      */
-    @GetMapping("/profile")
-    public ApiResponse<UserProfileResponse> getProfile(@RequestParam Long userId) {
+    @GetMapping("/profile/{userId}")
+    public ApiResponse<UserProfileResponse> getProfile(@PathVariable Long userId) {
         log.info("获取用户信息，用户ID：{}", userId);
         
         try {
-            // TODO: 从数据库查询用户信息
+            UserPO user = userMapper.findById(userId);
+            if (user == null) {
+                return ApiResponse.error("用户不存在");
+            }
             
-            // 临时模拟数据
             UserProfileResponse response = UserProfileResponse.builder()
-                    .userId(userId)
-                    .nickName("用户" + userId)
-                    .avatar("https://example.com/avatar.jpg")
-                    .isVip(false)
-                    .vipExpireTime(null)
-                    .totalAnalysisCount(0)
+                    .userId(user.getId())
+                    .openId(user.getOpenid())
+                    .nickname(user.getNickname())
+                    .avatar(user.getAvatarUrl())
+                    .phone(user.getPhone())
+                    .vipLevel(user.getVipLevel())
+                    .vipExpireTime(user.getVipExpireTime())
                     .build();
             
             return ApiResponse.success(response);
             
         } catch (Exception e) {
-            log.error("获取用户信息失败，用户ID：{}，错误信息：{}", userId, e.getMessage(), e);
+            log.error("获取用户信息失败，用户ID：{}", userId, e);
             return ApiResponse.error("获取用户信息失败：" + e.getMessage());
         }
     }
@@ -92,64 +98,112 @@ public class UserController {
         log.info("更新用户信息，用户ID：{}", request.getUserId());
         
         try {
-            // TODO: 更新用户信息到数据库
+            UserPO user = userMapper.findById(request.getUserId());
+            if (user == null) {
+                return ApiResponse.error("用户不存在");
+            }
             
-            log.info("用户信息更新成功，用户ID：{}", request.getUserId());
+            // 更新用户信息
+            if (request.getNickname() != null) {
+                user.setNickname(request.getNickname());
+            }
+            if (request.getAvatar() != null) {
+                user.setAvatarUrl(request.getAvatar());
+            }
+            if (request.getPhone() != null) {
+                user.setPhone(request.getPhone());
+            }
+            user.setUpdatedTime(LocalDateTime.now());
+            
+            userMapper.updateById(user);
+            
+            log.info("更新用户信息成功，用户ID：{}", request.getUserId());
             return ApiResponse.success();
             
         } catch (Exception e) {
-            log.error("更新用户信息失败，用户ID：{}，错误信息：{}", request.getUserId(), e.getMessage(), e);
+            log.error("更新用户信息失败，用户ID：{}", request.getUserId(), e);
             return ApiResponse.error("更新用户信息失败：" + e.getMessage());
         }
     }
     
     /**
-     * 获取VIP状态
+     * 获取用户VIP状态
      */
-    @GetMapping("/vip-status")
-    public ApiResponse<VipStatusResponse> getVipStatus(@RequestParam Long userId) {
-        log.info("获取VIP状态，用户ID：{}", userId);
+    @GetMapping("/vip-status/{userId}")
+    public ApiResponse<VipStatusResponse> getVipStatus(@PathVariable Long userId) {
+        log.info("获取用户VIP状态，用户ID：{}", userId);
         
         try {
-            // TODO: 从数据库查询VIP状态
+            UserPO user = userMapper.findById(userId);
+            if (user == null) {
+                return ApiResponse.error("用户不存在");
+            }
             
-            // 临时模拟数据
+            boolean isVip = user.getVipLevel() != null && user.getVipLevel() > 0;
+            boolean isExpired = false;
+            
+            if (isVip && user.getVipExpireTime() != null) {
+                isExpired = user.getVipExpireTime().isBefore(LocalDateTime.now());
+            }
+            
             VipStatusResponse response = VipStatusResponse.builder()
-                    .userId(userId)
-                    .isVip(false)
-                    .vipLevel(0)
-                    .vipExpireTime(null)
-                    .remainingAnalysisCount(3) // 免费用户每日3次
-                    .totalAnalysisCount(0)
+                    .isVip(isVip && !isExpired)
+                    .vipLevel(user.getVipLevel())
+                    .expireTime(user.getVipExpireTime())
+                    .isExpired(isExpired)
                     .build();
             
             return ApiResponse.success(response);
             
         } catch (Exception e) {
-            log.error("获取VIP状态失败，用户ID：{}，错误信息：{}", userId, e.getMessage(), e);
+            log.error("获取VIP状态失败，用户ID：{}", userId, e);
             return ApiResponse.error("获取VIP状态失败：" + e.getMessage());
         }
     }
     
     /**
-     * VIP升级
+     * 删除用户账户
      */
-    @PostMapping("/upgrade-vip")
-    public ApiResponse<Void> upgradeVip(@RequestParam Long userId, @RequestParam Integer vipLevel) {
-        log.info("VIP升级，用户ID：{}，VIP等级：{}", userId, vipLevel);
+    @DeleteMapping("/{userId}")
+    public ApiResponse<Void> deleteUser(@PathVariable Long userId) {
+        log.info("删除用户账户，用户ID：{}", userId);
         
         try {
-            // TODO: 实现VIP升级逻辑
-            // 1. 验证支付状态
-            // 2. 更新用户VIP状态
-            // 3. 记录订单信息
+            UserPO user = userMapper.findById(userId);
+            if (user == null) {
+                return ApiResponse.error("用户不存在");
+            }
             
-            log.info("VIP升级成功，用户ID：{}，VIP等级：{}", userId, vipLevel);
+            userMapper.deleteById(userId);
+            
+            log.info("删除用户账户成功，用户ID：{}", userId);
             return ApiResponse.success();
             
         } catch (Exception e) {
-            log.error("VIP升级失败，用户ID：{}，错误信息：{}", userId, e.getMessage(), e);
-            return ApiResponse.error("VIP升级失败：" + e.getMessage());
+            log.error("删除用户账户失败，用户ID：{}", userId, e);
+            return ApiResponse.error("删除用户账户失败：" + e.getMessage());
+        }
+    }
+    
+    /**
+     * 获取用户统计信息
+     */
+    @GetMapping("/stats")
+    public ApiResponse<Map<String, Object>> getUserStats() {
+        log.info("获取用户统计信息");
+        
+        try {
+            int totalUsers = userMapper.countUsers();
+            
+            Map<String, Object> stats = new HashMap<>();
+            stats.put("totalUsers", totalUsers);
+            stats.put("timestamp", System.currentTimeMillis());
+            
+            return ApiResponse.success(stats);
+            
+        } catch (Exception e) {
+            log.error("获取用户统计信息失败", e);
+            return ApiResponse.error("获取统计信息失败：" + e.getMessage());
         }
     }
 } 

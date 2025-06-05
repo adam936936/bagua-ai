@@ -1,0 +1,101 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: fortune-mini-app
+  
+  # 本地MySQL数据库配置
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/fortune_db?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true
+    username: root
+    # 本地MySQL无密码，显式设置为null
+    password: ${MYSQL_PASSWORD:}
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 10
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      connection-timeout: 30000
+  
+  # 禁用Redis（开发环境）
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+  
+  # Jackson配置
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    default-property-inclusion: non_null
+
+# MyBatis-Plus配置
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: false
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+  mapper-locations: classpath*:/mapper/**/*.xml
+
+# 开发环境日志配置
+logging:
+  level:
+    com.fortune: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.boot.autoconfigure: INFO
+    org.springframework.jdbc: DEBUG
+    org.mybatis: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# 自定义配置
+fortune:
+  # JWT配置
+  jwt:
+    secret: fortune-mini-app-secret-key-2024-local-dev
+    expiration: 86400 # 24小时（秒）
+  
+  # DeepSeek API配置
+  deepseek:
+    api-url: https://api.deepseek.com/v1/chat/completions
+    api-key: ${DEEPSEEK_API_KEY:sk-161f80e197f64439a4a9f0b4e9e30c40}
+    model: deepseek-chat
+    max-tokens: 1000
+    temperature: 0.7
+  
+  # 微信小程序配置
+  wechat:
+    app-id: ${WECHAT_APP_ID:wxab173e904eb23fca}
+    app-secret: ${WECHAT_APP_SECRET:75ad9ccb5f2ff072b8cd207d71a07ada}
+
+# 微信支付配置（开发环境）
+wechat:
+  pay:
+    app-id: ${WECHAT_PAY_APP_ID:wxab173e904eb23fca}
+    mch-id: ${WECHAT_PAY_MCH_ID:test-merchant-id}
+    api-key: ${WECHAT_PAY_API_KEY:test-api-key}
+    notify-url: ${WECHAT_PAY_NOTIFY_URL:http://localhost:8080/api/vip/notify}
+    cert-path: ${WECHAT_PAY_CERT_PATH:classpath:cert/apiclient_cert.p12}
+
+# 管理端点配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,beans
+  endpoint:
+    health:
+      show-details: always
+
+# 开发模式
+debug: false 

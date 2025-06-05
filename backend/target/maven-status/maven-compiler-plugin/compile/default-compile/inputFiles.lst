@@ -2,6 +2,8 @@
 /Users/xiatian/xiatian/ai-cursor/bagua-ai/backend/src/main/java/com/fortune/application/service/FortuneApplicationService.java
 /Users/xiatian/xiatian/ai-cursor/bagua-ai/backend/src/main/java/com/fortune/interfaces/web/FortuneController.java
 /Users/xiatian/xiatian/ai-cursor/bagua-ai/backend/src/main/java/com/fortune/infrastructure/config/WebConfig.java
+/Users/xiatian/xiatian/ai-cursor/bagua-ai/backend/src/main/java/com/fortune/infrastructure/persistence/po/UserPO.java
+/Users/xiatian/xiatian/ai-cursor/bagua-ai/backend/src/main/java/com/fortune/infrastructure/persistence/mapper/UserMapper.java
 /Users/xiatian/xiatian/ai-cursor/bagua-ai/backend/src/main/java/com/fortune/domain/fortune/entity/FortuneRecord.java
 /Users/xiatian/xiatian/ai-cursor/bagua-ai/backend/src/main/java/com/fortune/interfaces/dto/response/FortuneCalculateResponse.java
 /Users/xiatian/xiatian/ai-cursor/bagua-ai/backend/src/main/java/com/fortune/config/WechatPayConfig.java
@@ -20,6 +22,7 @@
 /Users/xiatian/xiatian/ai-cursor/bagua-ai/backend/src/main/java/com/fortune/application/service/VipService.java
 /Users/xiatian/xiatian/ai-cursor/bagua-ai/backend/src/main/java/com/fortune/interfaces/assembler/FortuneAssembler.java
 /Users/xiatian/xiatian/ai-cursor/bagua-ai/backend/src/main/java/com/fortune/interfaces/web/UserController.java
+/Users/xiatian/xiatian/ai-cursor/bagua-ai/backend/src/main/java/com/fortune/application/service/WechatAuthService.java
 /Users/xiatian/xiatian/ai-cursor/bagua-ai/backend/src/main/java/com/fortune/domain/fortune/valueobject/LunarDate.java
 /Users/xiatian/xiatian/ai-cursor/bagua-ai/backend/src/main/java/com/fortune/domain/fortune/valueobject/WuXingAnalysis.java
 /Users/xiatian/xiatian/ai-cursor/bagua-ai/backend/src/main/java/com/fortune/infrastructure/persistence/po/FortuneRecordPO.java
@@ -29,6 +32,7 @@
 /Users/xiatian/xiatian/ai-cursor/bagua-ai/backend/src/main/java/com/fortune/interfaces/dto/request/NameRecommendRequest.java
 /Users/xiatian/xiatian/ai-cursor/bagua-ai/backend/src/main/java/com/fortune/infrastructure/persistence/mapper/FortuneRecordMapper.java
 /Users/xiatian/xiatian/ai-cursor/bagua-ai/backend/src/main/java/com/fortune/domain/fortune/entity/NameRecommendation.java
+/Users/xiatian/xiatian/ai-cursor/bagua-ai/backend/src/main/java/com/fortune/application/service/JwtTokenService.java
 /Users/xiatian/xiatian/ai-cursor/bagua-ai/backend/src/main/java/com/fortune/domain/fortune/valueobject/ShengXiao.java
 /Users/xiatian/xiatian/ai-cursor/bagua-ai/backend/src/main/java/com/fortune/interfaces/web/TestController.java
 /Users/xiatian/xiatian/ai-cursor/bagua-ai/backend/src/main/java/com/fortune/domain/model/VipOrder.java

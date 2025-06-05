@@ -51,10 +51,22 @@ public class FortuneController {
         log.info("开始八字测算，请求参数：{}", request);
         
         try {
-            Long userId = Long.valueOf(request.get("userId").toString());
-            String userName = (String) request.get("userName");
+            // 参数验证和默认值处理
+            Long userId = request.get("userId") != null ? Long.valueOf(request.get("userId").toString()) : 1L;
+            String userName = request.get("userName") != null ? (String) request.get("userName") : (String) request.get("name");
             String birthDate = (String) request.get("birthDate");
             String birthTime = (String) request.get("birthTime");
+            
+            // 验证必需参数
+            if (userName == null || userName.trim().isEmpty()) {
+                return ApiResponse.error("姓名不能为空");
+            }
+            if (birthDate == null || birthDate.trim().isEmpty()) {
+                return ApiResponse.error("出生日期不能为空");
+            }
+            if (birthTime == null || birthTime.trim().isEmpty()) {
+                birthTime = "午时"; // 默认时辰
+            }
             
             // 调用应用服务进行计算（这里需要修改应用服务以支持数据库保存）
             // 暂时使用TestFortuneController的逻辑
