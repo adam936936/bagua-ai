@@ -1,6 +1,6 @@
 {
     "name": "AI智慧分析小程序",
-    "appid": "wx7fafb8277143634d",
+    "appid": "YOUR_WECHAT_APPID_HERE",
     "description": "基于AI技术的个性分析工具",
     "versionName": "1.0.0",
     "versionCode": "100",
@@ -41,7 +41,7 @@
     },
     "quickapp": {},
     "mp-weixin": {
-        "appid": "wx7fafb8277143634d",
+        "appid": "YOUR_WECHAT_APPID_HERE",
         "setting": {
             "urlCheck": false,
             "es6": true,

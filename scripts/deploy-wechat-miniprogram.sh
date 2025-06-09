@@ -251,7 +251,7 @@ show_import_guide() {
     echo "  1. 打开微信开发者工具"
     echo "  2. 选择'导入项目'"
     echo "  3. 项目目录: $(pwd)/frontend/dist/build/mp-weixin"
-    echo "  4. AppID: wx7fafb8277143634d (从project.config.json获取)"
+    echo "  4. AppID: [请配置您的AppID] (从project.config.json获取)"
     echo "  5. 项目名称: AI八卦运势小程序"
     echo ""
     echo "🔗 重要文件路径："

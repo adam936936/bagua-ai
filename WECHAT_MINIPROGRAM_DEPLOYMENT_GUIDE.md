@@ -5,7 +5,7 @@
 **项目名称**: AI八卦运势小程序  
 **技术栈**: uni-app + Vue 3 + TypeScript  
 **目标平台**: 微信小程序  
-**AppID**: `wx7fafb8277143634d`  
+**AppID**: `[已移除 - 请配置您自己的AppID]`  
 
 ## 🔧 构建命令对比
 
@@ -106,7 +106,7 @@ frontend/dist/build/mp-weixin/
 3. 点击"导入项目"
 4. 填写项目信息：
    - **项目目录**: `你的项目路径/frontend/dist/build/mp-weixin`
-   - **AppID**: `wx7fafb8277143634d`
+   - **AppID**: `[已移除 - 请配置您自己的AppID]`
    - **项目名称**: `AI八卦运势小程序`
 
 ### 第3步：验证项目

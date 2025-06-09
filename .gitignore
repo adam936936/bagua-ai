@@ -92,6 +92,12 @@ yarn.lock
 **/.env.secret
 **/.env.private
 
+# 微信小程序配置文件（包含敏感AppID）
+**/application-local.properties
+**/config/local.*
+project.config.local.json
+manifest.local.json
+
 # 数据库文件
 *.db
 *.sqlite
