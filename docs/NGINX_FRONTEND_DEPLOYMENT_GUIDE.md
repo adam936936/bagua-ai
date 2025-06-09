@@ -332,9 +332,9 @@ nginx-prod:
 export MYSQL_PASSWORD='FortuneProd2025!@#'
 export REDIS_PASSWORD='RedisProd2025!@#'
 export JWT_SECRET='FortuneJWTSecretKeyForProductionEnvironment2024!@#$%^&*'
-export DEEPSEEK_API_KEY='sk-161f80e197f64439a4a9f0b4e9e30c40'
+export DEEPSEEK_API_KEY='[已移除DeepSeek API Key]'
 export WECHAT_APP_ID='wxab173e904eb23fca'
-export WECHAT_APP_SECRET='75ad9ccb5f2ff072b8cd207d71a07ada'
+export WECHAT_APP_SECRET='[已移除微信AppSecret]'
 
 # 启动所有服务
 docker compose -f docker-compose.prod.yml up -d

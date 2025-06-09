@@ -120,14 +120,14 @@ verify_build() {
 restart_docker_services() {
     log_info "重启Docker服务以加载新的前端文件..."
     
-    # 设置环境变量
-    export MYSQL_PASSWORD='FortuneProd2025!@#'
-    export MYSQL_ROOT_PASSWORD='RootProd2025!@#'
-    export REDIS_PASSWORD='RedisProd2025!@#'
-    export JWT_SECRET='FortuneJWTSecretKeyForProductionEnvironment2024!@#$%^&*'
-    export DEEPSEEK_API_KEY='sk-161f80e197f64439a4a9f0b4e9e30c40'
-    export WECHAT_APP_ID='wxab173e904eb23fca'
-    export WECHAT_APP_SECRET='75ad9ccb5f2ff072b8cd207d71a07ada'
+    # 设置环境变量 (请替换为您的实际配置)
+    export MYSQL_PASSWORD='[请配置您的MySQL密码]'
+    export MYSQL_ROOT_PASSWORD='[请配置您的MySQL root密码]'
+    export REDIS_PASSWORD='[请配置您的Redis密码]'
+    export JWT_SECRET='[请配置您的JWT密钥]'
+    export DEEPSEEK_API_KEY='[请配置您的API密钥]'
+    export WECHAT_APP_ID='[请配置您的微信AppID]'
+    export WECHAT_APP_SECRET='[请配置您的微信AppSecret]'
     
     # 只重启Nginx服务
     if docker compose -f docker-compose.prod.yml ps nginx-prod | grep -q "Up"; then

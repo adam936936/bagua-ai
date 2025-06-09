@@ -206,7 +206,7 @@ echo ""
 echo "开发工具设置:"
 echo "  1. 打开微信开发者工具"
 echo "  2. 导入项目 -> 选择上述路径"
-echo "  3. AppID: wx7fafb8277143634d"
+echo "  3. AppID: [已移除微信AppID]"
 echo "  4. 在设置->项目设置中勾选 '不校验合法域名、web-view(业务域名)、TLS 版本以及 HTTPS 证书'"
 
 if [ $FAILED_TESTS -eq 0 ]; then

@@ -115,7 +115,7 @@ export const config = {
   
   // 微信小程序配置
   wechatConfig: {
-    appId: 'wx7fafb8277143634d'
+    appId: '[已移除微信AppID]'
   },
   
   // 其他生产环境配置
@@ -505,7 +505,7 @@ npm run build:mp-weixin
 ### 2. 微信开发者工具导入
 1. 打开微信开发者工具
 2. 导入项目：`frontend/dist/build/mp-weixin`
-3. AppID：`wx7fafb8277143634d`
+3. AppID：`[已移除微信AppID]`
 4. 项目名称：`AI八卦运势小程序`
 
 ### 3. 提交审核

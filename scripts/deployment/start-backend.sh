@@ -106,7 +106,7 @@ check_env_vars() {
     if [ -z "$DEEPSEEK_API_KEY" ]; then
         echo -e "${RED}❌ DEEPSEEK_API_KEY 环境变量未设置${NC}"
         echo -e "${YELLOW}正在设置默认API密钥...${NC}"
-        export DEEPSEEK_API_KEY="sk-161f80e197f64439a4a9f0b4e9e30c40"
+        export DEEPSEEK_API_KEY="[请配置您的API密钥]"
         echo -e "${GREEN}✅ API密钥已设置${NC}"
     else
         echo -e "${GREEN}✅ DEEPSEEK_API_KEY 已配置${NC}"

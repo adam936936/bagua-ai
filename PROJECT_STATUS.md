@@ -3,7 +3,7 @@
 ## 📋 项目概述
 - **项目名称**: AI八卦运势小程序
 - **技术栈**: UniApp + Vue3 + TypeScript + Pinia + Spring Boot
-- **微信小程序AppID**: wx7fafb8277143634d
+- **微信小程序AppID**: [已移除微信AppID]
 
 ## ✅ 已完成功能
 
@@ -89,7 +89,7 @@ frontend/
 ### 开发者工具配置
 1. 打开微信开发者工具
 2. 导入项目：选择 `frontend/dist/dev/mp-weixin/` 目录
-3. AppID：wx7fafb8277143634d
+3. AppID：[已移除微信AppID]
 4. 基础库版本：3.0.0
 
 ### 编译命令

@@ -147,9 +147,9 @@ cat > .env.prod << EOF
 MYSQL_ROOT_PASSWORD=FortuneProd2025!@#
 MYSQL_PASSWORD=FortuneProd2025!@#
 JWT_SECRET=FortuneJWTSecretKeyForProductionEnvironment2024!@#$%^&*
-DEEPSEEK_API_KEY=sk-161f80e197f64439a4a9f0b4e9e30c40
+DEEPSEEK_API_KEY=[已移除DeepSeek API Key]
 WECHAT_APP_ID=wxab173e904eb23fca
-WECHAT_APP_SECRET=75ad9ccb5f2ff072b8cd207d71a07ada
+WECHAT_APP_SECRET=[已移除微信AppSecret]
 EOF
 ```
 

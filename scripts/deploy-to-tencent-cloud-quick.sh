@@ -111,9 +111,9 @@ MYSQL_PASSWORD=$(openssl rand -hex 16)
 REDIS_PASSWORD=$(openssl rand -hex 16)
 
 # API密钥（需要手动配置）
-DEEPSEEK_API_KEY=sk-161f80e197f64439a4a9f0b4e9e30c40
-WECHAT_APP_ID=wxab173e904eb23fca
-WECHAT_APP_SECRET=75ad9ccb5f2ff072b8cd207d71a07ada
+DEEPSEEK_API_KEY=[请配置您的API密钥]
+WECHAT_APP_ID=[请配置您的微信AppID]
+WECHAT_APP_SECRET=[请配置您的微信AppSecret]
 
 # JWT密钥
 JWT_SECRET=$(openssl rand -hex 32)
