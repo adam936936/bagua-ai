@@ -1,0 +1,8 @@
+{
+  "services": {
+    "mysql": {"status": "running", "health": "healthy"},
+    "redis": {"status": "running", "health": "healthy"},
+    "backend": {"status": "running", "health": "starting"},
+    "frontend": {"status": "running"}
+  }
+}

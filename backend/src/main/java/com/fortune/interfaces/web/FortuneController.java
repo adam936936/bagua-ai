@@ -6,6 +6,7 @@ import com.fortune.interfaces.dto.response.ApiResponse;
 import com.fortune.interfaces.dto.response.FortuneCalculateResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -37,6 +38,9 @@ public class FortuneController {
         try {
             String fortune = fortuneApplicationService.getTodayFortune();
             return ApiResponse.success(fortune);
+        } catch (DataAccessException e) {
+            log.error("获取今日运势时数据库异常", e);
+            return ApiResponse.error("数据库服务暂时不可用，请稍后重试");
         } catch (Exception e) {
             log.error("获取今日运势失败", e);
             return ApiResponse.error("获取今日运势失败：" + e.getMessage());
@@ -68,22 +72,11 @@ public class FortuneController {
                 birthTime = "午时"; // 默认时辰
             }
             
-            // 调用应用服务进行计算（这里需要修改应用服务以支持数据库保存）
-            // 暂时使用TestFortuneController的逻辑
+            // 先计算命理信息，不依赖数据库
             Map<String, Object> result = calculateFortune(userName, birthDate, birthTime);
             
-            // 保存到数据库
-            Long recordId = fortuneRecordRepository.saveFortuneRecord(
-                userId, userName, birthDate, birthTime,
-                (String) result.get("ganZhi"),
-                (String) result.get("shengXiao"),
-                (String) result.get("wuXing"),
-                (String) result.get("aiAnalysis")
-            );
-            
-            // 构建响应
+            // 构建响应对象(先不设置ID，以防数据库操作失败)
             FortuneCalculateResponse response = new FortuneCalculateResponse();
-            response.setId(recordId);
             response.setUserName(userName);
             response.setBirthDate(birthDate);
             response.setBirthTime(birthTime);
@@ -95,8 +88,33 @@ public class FortuneController {
             response.setAiAnalysis((String) result.get("aiAnalysis"));
             response.setCreateTime(java.time.LocalDateTime.now());
             
+            try {
+                // 保存到数据库
+                Long recordId = fortuneRecordRepository.saveFortuneRecord(
+                    userId, userName, birthDate, birthTime,
+                    (String) result.get("ganZhi"),
+                    (String) result.get("shengXiao"),
+                    (String) result.get("wuXing"),
+                    (String) result.get("aiAnalysis")
+                );
+                
+                // 设置记录ID
+                response.setId(recordId);
+            } catch (DataAccessException e) {
+                log.error("保存八字测算结果到数据库失败", e);
+                // 不阻止返回计算结果，但记录错误并通知用户
+                response.setId(-1L); // 使用-1表示未保存
+                return ApiResponse.successWithWarning(response, "计算成功，但结果未能保存到数据库");
+            }
+            
             return ApiResponse.success(response);
             
+        } catch (DataAccessException e) {
+            log.error("八字测算过程中数据库异常", e);
+            return ApiResponse.error("数据库服务暂时不可用，请稍后重试");
+        } catch (IllegalArgumentException e) {
+            log.warn("八字测算参数错误", e);
+            return ApiResponse.error("参数错误：" + e.getMessage());
         } catch (Exception e) {
             log.error("八字测算失败", e);
             return ApiResponse.error("八字测算失败：" + e.getMessage());
@@ -113,6 +131,17 @@ public class FortuneController {
         log.info("获取用户历史记录，用户ID：{}，页码：{}，大小：{}", userId, page, size);
         
         try {
+            // 参数验证
+            if (userId == null || userId <= 0) {
+                return ApiResponse.error("用户ID无效");
+            }
+            if (page <= 0) {
+                page = 1;
+            }
+            if (size <= 0 || size > 100) {
+                size = 10;
+            }
+            
             List<FortuneCalculateResponse> records = fortuneRecordRepository.getUserHistory(userId, page, size);
             int total = fortuneRecordRepository.getUserHistoryCount(userId);
             
@@ -125,6 +154,9 @@ public class FortuneController {
             
             return ApiResponse.success(data);
             
+        } catch (DataAccessException e) {
+            log.error("获取用户历史记录时数据库异常，用户ID：{}", userId, e);
+            return ApiResponse.error("数据库服务暂时不可用，请稍后重试");
         } catch (Exception e) {
             log.error("获取用户历史记录失败，用户ID：{}", userId, e);
             return ApiResponse.error("获取历史记录失败：" + e.getMessage());
@@ -139,12 +171,20 @@ public class FortuneController {
         log.info("删除历史记录，记录ID：{}", recordId);
         
         try {
+            // 参数验证
+            if (recordId == null || recordId <= 0) {
+                return ApiResponse.error("记录ID无效");
+            }
+            
             boolean success = fortuneRecordRepository.deleteById(recordId);
             if (success) {
                 return ApiResponse.success();
             } else {
                 return ApiResponse.error("删除失败，记录不存在");
             }
+        } catch (DataAccessException e) {
+            log.error("删除历史记录时数据库异常，记录ID：{}", recordId, e);
+            return ApiResponse.error("数据库服务暂时不可用，请稍后重试");
         } catch (Exception e) {
             log.error("删除历史记录失败，记录ID：{}", recordId, e);
             return ApiResponse.error("删除历史记录失败：" + e.getMessage());
@@ -178,14 +218,43 @@ public class FortuneController {
                 return ApiResponse.error("出生日期不能为空");
             }
             
+            // 参数合法性验证
+            if (birthYear < 1900 || birthYear > 2100) {
+                return ApiResponse.error("出生年份超出范围(1900-2100)");
+            }
+            if (birthMonth < 1 || birthMonth > 12) {
+                return ApiResponse.error("出生月份超出范围(1-12)");
+            }
+            if (birthDay < 1 || birthDay > 31) {
+                return ApiResponse.error("出生日期超出范围(1-31)");
+            }
+            
             // 根据出生信息计算五行缺失
             String wuXingLack = calculateWuXingLack(birthYear, birthMonth, birthDay, birthHour != null ? birthHour : 0);
             
             // 生成推荐姓名
             java.util.List<String> recommendedNames = generateRecommendNames(surname, gender, wuXingLack);
             
+            // 数据库保存操作封装在try-catch中，不影响主流程
+            if (userId != null && userId > 0) {
+                try {
+                    // 这里添加保存推荐姓名记录的逻辑
+                    log.info("保存姓名推荐记录，用户ID：{}", userId);
+                    // fortuneRecordRepository.saveNameRecommendation(...);
+                } catch (DataAccessException e) {
+                    log.error("保存姓名推荐记录失败，用户ID：{}", userId, e);
+                    // 继续处理，不阻止返回结果
+                }
+            }
+            
             return ApiResponse.success(recommendedNames);
             
+        } catch (DataAccessException e) {
+            log.error("获取AI推荐姓名时数据库异常", e);
+            return ApiResponse.error("数据库服务暂时不可用，请稍后重试");
+        } catch (IllegalArgumentException e) {
+            log.warn("获取AI推荐姓名参数错误", e);
+            return ApiResponse.error("参数错误：" + e.getMessage());
         } catch (Exception e) {
             log.error("获取AI推荐姓名失败", e);
             return ApiResponse.error("获取推荐姓名失败：" + e.getMessage());

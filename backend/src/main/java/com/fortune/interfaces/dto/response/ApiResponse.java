@@ -1,67 +1,100 @@
 package com.fortune.interfaces.dto.response;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-
-import java.time.LocalDateTime;
+import java.io.Serializable;
 
 /**
- * 统一API响应格式
- * 
- * @author fortune
- * @since 2024-01-01
+ * API统一响应格式
+ *
+ * @param <T> 数据类型
  */
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class ApiResponse<T> {
-    
-    /**
-     * 响应码
-     */
-    private Integer code;
-    
-    /**
-     * 响应消息
-     */
+public class ApiResponse<T> implements Serializable {
+    private static final long serialVersionUID = 1L;
+
+    private boolean success;
     private String message;
-    
-    /**
-     * 响应数据
-     */
     private T data;
-    
-    /**
-     * 时间戳
-     */
-    private LocalDateTime timestamp;
-    
-    /**
-     * 成功响应
-     */
-    public static <T> ApiResponse<T> success(T data) {
-        return new ApiResponse<>(200, "操作成功", data, LocalDateTime.now());
+    private String code;
+    private String warning;
+
+    private ApiResponse() {
     }
-    
-    /**
-     * 成功响应（无数据）
-     */
+
     public static <T> ApiResponse<T> success() {
-        return new ApiResponse<>(200, "操作成功", null, LocalDateTime.now());
+        ApiResponse<T> response = new ApiResponse<>();
+        response.setSuccess(true);
+        response.setMessage("操作成功");
+        response.setCode("200");
+        return response;
     }
-    
+
+    public static <T> ApiResponse<T> success(T data) {
+        ApiResponse<T> response = success();
+        response.setData(data);
+        return response;
+    }
+
     /**
-     * 失败响应
+     * 成功但有警告信息
      */
+    public static <T> ApiResponse<T> successWithWarning(T data, String warning) {
+        ApiResponse<T> response = success(data);
+        response.setWarning(warning);
+        return response;
+    }
+
     public static <T> ApiResponse<T> error(String message) {
-        return new ApiResponse<>(500, message, null, LocalDateTime.now());
+        ApiResponse<T> response = new ApiResponse<>();
+        response.setSuccess(false);
+        response.setMessage(message);
+        response.setCode("500");
+        return response;
     }
-    
-    /**
-     * 失败响应（自定义错误码）
-     */
-    public static <T> ApiResponse<T> error(Integer code, String message) {
-        return new ApiResponse<>(code, message, null, LocalDateTime.now());
+
+    public static <T> ApiResponse<T> error(String code, String message) {
+        ApiResponse<T> response = new ApiResponse<>();
+        response.setSuccess(false);
+        response.setMessage(message);
+        response.setCode(code);
+        return response;
+    }
+
+    public boolean isSuccess() {
+        return success;
+    }
+
+    public void setSuccess(boolean success) {
+        this.success = success;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public T getData() {
+        return data;
+    }
+
+    public void setData(T data) {
+        this.data = data;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public String getWarning() {
+        return warning;
+    }
+
+    public void setWarning(String warning) {
+        this.warning = warning;
     }
 } 
