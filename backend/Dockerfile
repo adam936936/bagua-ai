@@ -1,23 +1,15 @@
-# 使用阿里云镜像源的OpenJDK 17
-FROM registry.cn-hangzhou.aliyuncs.com/library/openjdk:17-jdk-slim
+# 使用Eclipse Temurin官方镜像（OpenJDK的官方发行版）
+FROM eclipse-temurin:17-jdk-alpine
 
 # 设置时区和编码
 ENV TZ=Asia/Shanghai
 ENV LANG=C.UTF-8
 
-# 使用阿里云APT镜像源加速包安装
-RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources 2>/dev/null || \
-    sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list 2>/dev/null && \
-    sed -i 's/security.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources 2>/dev/null || \
-    sed -i 's/security.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list 2>/dev/null
-
-# 安装必要工具
-RUN apt-get update && apt-get install -y \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+# 安装curl（Alpine使用apk包管理器）
+RUN apk add --no-cache curl
 
 # 创建应用用户
-RUN groupadd -r app && useradd -r -g app app
+RUN addgroup -g 1000 app && adduser -D -s /bin/sh -u 1000 -G app app
 
 # 设置工作目录
 WORKDIR /app
