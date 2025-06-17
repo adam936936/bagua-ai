@@ -1,5 +1,9 @@
-# 使用预构建的JAR文件，避免在容器内构建
+# 使用Docker Hub官方OpenJDK 17镜像
 FROM openjdk:17-jdk-slim
+
+# 设置时区和编码
+ENV TZ=Asia/Shanghai
+ENV LANG=C.UTF-8
 
 # 安装必要工具
 RUN apt-get update && apt-get install -y \
