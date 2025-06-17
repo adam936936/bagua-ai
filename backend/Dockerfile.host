@@ -1,7 +1,0 @@
-# 使用主机网络模式，直接运行应用
-# 这个Dockerfile用于生成运行脚本，不依赖外部镜像
-
-# 创建启动脚本
-FROM scratch
-COPY start.sh /start.sh
-ENTRYPOINT ["/start.sh"] 
