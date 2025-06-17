@@ -28,49 +28,24 @@ public class FortuneRecordPO {
     private Long userId;
     
     /**
-     * 姓名
+     * 出生日期
      */
-    private String name;
+    private String birthDate;
     
     /**
-     * 性别：1-男，2-女
+     * 出生时间
      */
-    private Integer gender;
+    private String birthTime;
     
     /**
-     * 出生年
+     * 用户姓名
      */
-    private Integer birthYear;
+    private String userName;
     
     /**
-     * 出生月
+     * 农历日期
      */
-    private Integer birthMonth;
-    
-    /**
-     * 出生日
-     */
-    private Integer birthDay;
-    
-    /**
-     * 出生时辰
-     */
-    private Integer birthHour;
-    
-    /**
-     * 农历年
-     */
-    private Integer lunarYear;
-    
-    /**
-     * 农历月
-     */
-    private Integer lunarMonth;
-    
-    /**
-     * 农历日
-     */
-    private Integer lunarDay;
+    private String lunarDate;
     
     /**
      * 干支
@@ -78,14 +53,19 @@ public class FortuneRecordPO {
     private String ganZhi;
     
     /**
+     * 五行分析
+     */
+    private String wuXing;
+    
+    /**
+     * 五行缺失
+     */
+    private String wuXingLack;
+    
+    /**
      * 生肖
      */
     private String shengXiao;
-    
-    /**
-     * 五行分析
-     */
-    private String wuXingAnalysis;
     
     /**
      * AI分析结果
@@ -93,14 +73,24 @@ public class FortuneRecordPO {
     private String aiAnalysis;
     
     /**
+     * 姓名分析
+     */
+    private String nameAnalysis;
+    
+    /**
+     * 姓名推荐
+     */
+    private String nameRecommendations;
+    
+    /**
      * 创建时间
      */
-    private LocalDateTime createdTime;
+    private LocalDateTime createTime;
     
     /**
      * 更新时间
      */
-    private LocalDateTime updatedTime;
+    private LocalDateTime updateTime;
     
     /**
      * 删除标记：0-未删除，1-已删除

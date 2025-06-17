@@ -132,13 +132,41 @@ onMounted(() => {
   // 确保隐藏任何可能残留的loading
   uni.hideLoading()
   
-  console.log('Result页面加载，当前result:', result.value)
+  console.log('Result页面加载，当前store:', {
+    result: JSON.stringify(result.value),
+    hasResult: !!result.value,
+    userName: result.value?.userName,
+    birthDate: result.value?.birthDate,
+    birthTime: result.value?.birthTime,
+    fullStoreResult: fortuneStore
+  })
   
+  // 如果没有分析结果，尝试从URL参数或缓存中恢复
   if (!result.value) {
-    uni.showToast({
-      title: '暂无分析结果，请先进行分析',
-      icon: 'none'
-    })
+    // 尝试从存储中恢复最后一次的分析结果
+    try {
+      const savedResult = uni.getStorageSync('lastFortuneResult')
+      if (savedResult) {
+        console.log('从缓存中恢复分析结果')
+        fortuneStore.result = JSON.parse(savedResult)
+        console.log('恢复后的结果:', fortuneStore.result)
+      } else {
+        console.error('缓存中没有找到分析结果数据')
+        uni.showToast({
+          title: '暂无分析结果，请先进行分析',
+          icon: 'none'
+        })
+      }
+    } catch (e) {
+      console.error('恢复分析结果失败:', e)
+      uni.showToast({
+        title: '暂无分析结果，请先进行分析',
+        icon: 'none'
+      })
+    }
+  } else {
+    // 有结果，保存到本地存储，以便后续可能的恢复
+    uni.setStorageSync('lastFortuneResult', JSON.stringify(result.value))
   }
 })
 

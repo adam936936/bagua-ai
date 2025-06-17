@@ -513,4 +513,29 @@ public class FortuneController {
                            "人生建议：保持积极乐观的心态，多学习充实自己。",
                            userName, ganZhi, shengXiao);
     }
+
+    /**
+     * 检查数据库表
+     */
+    @GetMapping("/check-tables")
+    public ApiResponse<String> checkTables() {
+        log.info("检查数据库表");
+        
+        try {
+            // 执行SQL查询检查表是否存在
+            StringBuilder result = new StringBuilder();
+            
+            boolean hasTFortuneRecord = fortuneRecordRepository.checkTableExists("t_fortune_record");
+            result.append("t_fortune_record表: ").append(hasTFortuneRecord ? "存在" : "不存在").append("\n");
+            
+            // 不再使用fortune_records表，使用t_fortune_record表
+            boolean hasFortuneRecords = fortuneRecordRepository.checkTableExists("t_fortune_record");
+            result.append("t_fortune_record表: ").append(hasFortuneRecords ? "存在" : "不存在");
+            
+            return ApiResponse.success(result.toString());
+        } catch (Exception e) {
+            log.error("检查数据库表失败", e);
+            return ApiResponse.error("检查数据库表失败：" + e.getMessage());
+        }
+    }
 } 

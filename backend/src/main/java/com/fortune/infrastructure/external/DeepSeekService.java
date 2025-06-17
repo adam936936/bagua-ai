@@ -43,8 +43,8 @@ public class DeepSeekService {
     @Value("${fortune.deepseek.temperature}")
     private Double temperature;
     
-    @Value("${fortune.deepseek.mock-mode:false}")
-    private Boolean mockMode;
+    @Value("${fortune.deepseek.mock-mode:true}")
+    private Boolean mockMode = true;
     
     private final RestTemplate restTemplate;
     

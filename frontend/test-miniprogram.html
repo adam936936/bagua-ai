@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>微信小程序API测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .api-test {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        .api-test h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        .btn {
+            background: #07c160;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #06ad56;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .success {
+            border-left: 4px solid #07c160;
+            background: #f0f9f4;
+        }
+        .error {
+            border-left: 4px solid #fa5151;
+            background: #fef0f0;
+        }
+        .input-group {
+            margin: 10px 0;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔮 微信小程序API测试</h1>
+        <p>测试后端API接口 - 端口: 8081</p>
+
+        <!-- 简单测试 -->
+        <div class="api-test">
+            <h3>1. 简单连接测试</h3>
+            <button class="btn" onclick="testHello()">测试Hello接口</button>
+            <button class="btn" onclick="testFortuneSimple()">测试简单运势</button>
+            <div id="simple-result" class="result"></div>
+        </div>
+
+        <!-- 今日运势 -->
+        <div class="api-test">
+            <h3>2. 今日运势</h3>
+            <button class="btn" onclick="getTodayFortune()">获取今日运势</button>
+            <div id="fortune-result" class="result"></div>
+        </div>
+
+        <!-- 命理计算 -->
+        <div class="api-test">
+            <h3>3. 命理计算</h3>
+            <div class="input-group">
+                <label>姓名:</label>
+                <input type="text" id="name" value="张三" placeholder="请输入姓名">
+            </div>
+            <div class="input-group">
+                <label>出生日期:</label>
+                <input type="date" id="birthDate" value="1990-01-01">
+            </div>
+            <div class="input-group">
+                <label>出生时间:</label>
+                <input type="time" id="birthTime" value="08:00">
+            </div>
+            <div class="input-group">
+                <label>性别:</label>
+                <select id="gender">
+                    <option value="male">男</option>
+                    <option value="female">女</option>
+                </select>
+            </div>
+            <button class="btn" onclick="calculateFortune()">计算命理</button>
+            <div id="calculate-result" class="result"></div>
+        </div>
+
+        <!-- 服务状态 -->
+        <div class="api-test">
+            <h3>4. 服务状态检查</h3>
+            <button class="btn" onclick="checkHealth()">检查健康状态</button>
+            <div id="health-result" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8081/api';
+
+        // 通用请求函数
+        async function apiRequest(url, options = {}) {
+            try {
+                const response = await fetch(API_BASE + url, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    ...options
+                });
+                
+                const data = await response.json();
+                return {
+                    success: response.ok,
+                    status: response.status,
+                    data: data
+                };
+            } catch (error) {
+                return {
+                    success: false,
+                    error: error.message
+                };
+            }
+        }
+
+        // 显示结果
+        function showResult(elementId, result) {
+            const element = document.getElementById(elementId);
+            element.className = 'result ' + (result.success ? 'success' : 'error');
+            element.textContent = JSON.stringify(result, null, 2);
+        }
+
+        // 测试Hello接口
+        async function testHello() {
+            const result = await apiRequest('/simple/hello');
+            showResult('simple-result', result);
+        }
+
+        // 测试简单运势
+        async function testFortuneSimple() {
+            const result = await apiRequest('/simple/fortune-test');
+            showResult('simple-result', result);
+        }
+
+        // 获取今日运势
+        async function getTodayFortune() {
+            const result = await apiRequest('/fortune/today-fortune');
+            showResult('fortune-result', result);
+        }
+
+        // 计算命理
+        async function calculateFortune() {
+            const data = {
+                name: document.getElementById('name').value,
+                birthDate: document.getElementById('birthDate').value,
+                birthTime: document.getElementById('birthTime').value,
+                gender: document.getElementById('gender').value
+            };
+
+            const result = await apiRequest('/fortune/calculate', {
+                method: 'POST',
+                body: JSON.stringify(data)
+            });
+            showResult('calculate-result', result);
+        }
+
+        // 检查健康状态
+        async function checkHealth() {
+            const result = await apiRequest('/actuator/health');
+            showResult('health-result', result);
+        }
+
+        // 页面加载时自动测试连接
+        window.onload = function() {
+            testHello();
+        };
+    </script>
+</body>
+</html> 

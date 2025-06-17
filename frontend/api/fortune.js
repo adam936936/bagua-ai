@@ -1,4 +1,4 @@
-// api/fortune.js
+// api/fortune.js - uni-app版本
 const { request } = require('../utils/request.js')
 
 /**
@@ -11,12 +11,18 @@ const fortuneApi = {
   async calculate(params) {
     try {
       const response = await request.post('/fortune/calculate', {
-        userId: params.userId || this.generateUserId(),
-        userName: params.userName,
+        name: params.userName,  // 修改为后端期望的字段名
         birthDate: params.birthDate,
-        birthTime: params.birthTime
+        birthTime: params.birthTime,
+        gender: params.gender || 'male'  // 添加默认性别
       })
-      return response.data
+      
+      // 检查响应结构并返回正确的数据
+      if (response.success && response.data) {
+        return response.data
+      } else {
+        throw new Error(response.message || '计算失败')
+      }
     } catch (error) {
       console.error('计算命理信息失败:', error)
       throw error
@@ -28,13 +34,18 @@ const fortuneApi = {
    */
   async recommendNames(params) {
     try {
-      const response = await request.post('/fortune/recommend-names', {
-        userId: params.userId || this.generateUserId(),
-        wuXingLack: params.wuXingLack,
-        ganZhi: params.ganZhi,
-        surname: params.surname
+      const response = await request.post('/fortune/names', {
+        surname: params.surname,
+        gender: params.gender || 'male',
+        birthDate: params.birthDate,
+        birthTime: params.birthTime
       })
-      return response.data
+      
+      if (response.success && response.data) {
+        return response.data
+      } else {
+        throw new Error(response.message || '推荐失败')
+      }
     } catch (error) {
       console.error('AI推荐姓名失败:', error)
       throw error
@@ -47,7 +58,12 @@ const fortuneApi = {
   async getTodayFortune() {
     try {
       const response = await request.get('/fortune/today-fortune')
-      return response.data
+      
+      if (response.success) {
+        return response.data
+      } else {
+        throw new Error(response.message || '获取失败')
+      }
     } catch (error) {
       console.error('获取今日运势失败:', error)
       throw error
@@ -63,7 +79,12 @@ const fortuneApi = {
         page,
         size
       })
-      return response.data
+      
+      if (response.success && response.data) {
+        return response.data
+      } else {
+        throw new Error(response.message || '获取失败')
+      }
     } catch (error) {
       console.error('获取历史记录失败:', error)
       throw error
@@ -74,10 +95,10 @@ const fortuneApi = {
    * 生成用户ID（临时方案）
    */
   generateUserId() {
-    let userId = wx.getStorageSync('userId')
+    let userId = uni.getStorageSync('userId')  // 使用uni-app API
     if (!userId) {
       userId = Date.now()
-      wx.setStorageSync('userId', userId)
+      uni.setStorageSync('userId', userId)  // 使用uni-app API
     }
     return userId
   }

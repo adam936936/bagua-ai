@@ -15,7 +15,7 @@ interface ApiResponse<T = any> {
 
 class Request {
   // 本地开发环境 - 用于前后端联调测试
-  private baseURL = 'http://localhost:8080/api'
+  private baseURL = 'http://localhost:8081/api'
   
   private getToken(): string {
     return uni.getStorageSync('token') || ''
@@ -39,6 +39,8 @@ class Request {
         mask: true
       })
       
+      console.log(`请求开始: ${method} ${this.baseURL + url}`, method === 'GET' ? params : data)
+      
       uni.request({
         url: this.baseURL + url,
         method,
@@ -47,11 +49,15 @@ class Request {
         success: (res: any) => {
           uni.hideLoading()
           
+          console.log(`请求成功: ${method} ${url}`, res)
+          
           if (res.statusCode === 200) {
             const response = res.data as ApiResponse<T>
             if (response.code === 200) {
+              console.log(`业务逻辑处理成功: ${method} ${url}`, response)
               resolve(response)
             } else {
+              console.error(`业务逻辑处理失败: ${method} ${url}`, response.message)
               uni.showToast({
                 title: response.message || '请求失败',
                 icon: 'none'
@@ -59,6 +65,7 @@ class Request {
               reject(new Error(response.message || '请求失败'))
             }
           } else {
+            console.error(`HTTP请求失败: ${method} ${url}`, res.statusCode)
             uni.showToast({
               title: `请求失败: ${res.statusCode}`,
               icon: 'none'
@@ -68,6 +75,7 @@ class Request {
         },
         fail: (error) => {
           uni.hideLoading()
+          console.error(`请求错误: ${method} ${url}`, error)
           uni.showToast({
             title: '网络错误',
             icon: 'none'

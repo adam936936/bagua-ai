@@ -4,6 +4,7 @@ import com.fortune.infrastructure.persistence.mapper.FortuneRecordMapper;
 import com.fortune.infrastructure.persistence.po.FortuneRecordPO;
 import com.fortune.interfaces.dto.response.FortuneCalculateResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
  */
 @Repository
 @RequiredArgsConstructor
+@Slf4j
 public class FortuneRecordRepository {
     
     private final FortuneRecordMapper fortuneRecordMapper;
@@ -29,26 +31,119 @@ public class FortuneRecordRepository {
                                  String ganZhi, String shengXiao, String wuXingAnalysis, String aiAnalysis) {
         FortuneRecordPO record = new FortuneRecordPO();
         record.setUserId(userId);
-        record.setName(userName);
-        record.setGender(1); // 默认男性，实际应该从请求中获取
+        record.setUserName(userName);
+        record.setBirthDate(birthDate);
+        record.setBirthTime(birthTime);
         
-        // 解析出生日期
-        LocalDate birth = LocalDate.parse(birthDate);
-        record.setBirthYear(birth.getYear());
-        record.setBirthMonth(birth.getMonthValue());
-        record.setBirthDay(birth.getDayOfMonth());
-        
-        // 解析时辰（简化处理）
-        record.setBirthHour(parseTimeToHour(birthTime));
+        // 正确处理农历日期转换
+        String lunarDate = convertToLunarDate(birthDate);
+        record.setLunarDate(lunarDate);
         
         record.setGanZhi(ganZhi);
         record.setShengXiao(shengXiao);
-        record.setWuXingAnalysis(wuXingAnalysis);
+        record.setWuXing(wuXingAnalysis);
+        record.setWuXingLack(extractWuXingLack(wuXingAnalysis));
         record.setAiAnalysis(aiAnalysis);
         record.setDeleted(0);
         
         fortuneRecordMapper.insert(record);
         return record.getId();
+    }
+    
+    /**
+     * 转换公历日期为农历日期
+     * 这里使用简化的转换逻辑，实际项目中应该使用专业的农历转换库
+     */
+    private String convertToLunarDate(String gregorianDate) {
+        try {
+            LocalDate date = LocalDate.parse(gregorianDate);
+            
+            // 简化的农历转换逻辑
+            // 实际应该使用农历转换算法或第三方库如 lunar-java
+            int year = date.getYear();
+            int month = date.getMonthValue();
+            int day = date.getDayOfMonth();
+            
+            // 这里使用简化的映射，实际项目中需要使用准确的农历转换
+            String[] lunarMonths = {
+                "正月", "二月", "三月", "四月", "五月", "六月",
+                "七月", "八月", "九月", "十月", "十一月", "十二月"
+            };
+            
+            // 简化处理：假设农历比公历晚一个月左右
+            int lunarMonth = month > 1 ? month - 1 : 12;
+            int lunarYear = month > 1 ? year : year - 1;
+            
+            String dayStr = formatLunarDay(day);
+            
+            return String.format("农历%d年%s%s", lunarYear, lunarMonths[lunarMonth - 1], dayStr);
+            
+        } catch (Exception e) {
+            log.warn("农历日期转换失败，使用默认格式: {}", gregorianDate, e);
+            return "农历" + gregorianDate.replace("-", "年").replaceFirst("年", "年") + "日";
+        }
+    }
+    
+    /**
+     * 格式化农历日期
+     */
+    private String formatLunarDay(int day) {
+        if (day <= 10) {
+            String[] days = {"", "初一", "初二", "初三", "初四", "初五", 
+                           "初六", "初七", "初八", "初九", "初十"};
+            return days[day];
+        } else if (day < 20) {
+            return "十" + formatLunarDay(day - 10).substring(1);
+        } else if (day == 20) {
+            return "二十";
+        } else if (day < 30) {
+            return "廿" + formatLunarDay(day - 20).substring(1);
+        } else {
+            return "三十";
+        }
+    }
+    
+    /**
+     * 从五行分析中提取五行缺失信息
+     */
+    private String extractWuXingLack(String wuXingAnalysis) {
+        if (wuXingAnalysis == null || wuXingAnalysis.isEmpty()) {
+            return "未知";
+        }
+        
+        // 检查是否包含"缺"字
+        if (wuXingAnalysis.contains("缺")) {
+            // 提取缺失的五行
+            String[] elements = {"木", "火", "土", "金", "水"};
+            StringBuilder lacking = new StringBuilder();
+            
+            for (String element : elements) {
+                if (wuXingAnalysis.contains("缺" + element) || 
+                    wuXingAnalysis.contains(element + "0个")) {
+                    if (lacking.length() > 0) {
+                        lacking.append("、");
+                    }
+                    lacking.append(element);
+                }
+            }
+            
+            return lacking.length() > 0 ? lacking.toString() : "无";
+        }
+        
+        // 如果包含"0个"，提取对应的五行
+        String[] elements = {"木", "火", "土", "金", "水"};
+        StringBuilder lacking = new StringBuilder();
+        
+        for (String element : elements) {
+            if (wuXingAnalysis.contains(element + "0个")) {
+                if (lacking.length() > 0) {
+                    lacking.append("、");
+                }
+                lacking.append(element);
+            }
+        }
+        
+        return lacking.length() > 0 ? lacking.toString() : "无";
     }
     
     /**
@@ -89,81 +184,23 @@ public class FortuneRecordRepository {
     private FortuneCalculateResponse convertToResponse(FortuneRecordPO po) {
         FortuneCalculateResponse response = new FortuneCalculateResponse();
         response.setId(po.getId());
-        response.setUserName(po.getName());
-        response.setBirthDate(String.format("%d-%02d-%02d", po.getBirthYear(), po.getBirthMonth(), po.getBirthDay()));
-        response.setBirthTime(formatHourToTime(po.getBirthHour()));
-        response.setLunar(formatLunar(po.getBirthYear(), po.getBirthMonth(), po.getBirthDay()));
+        response.setUserName(po.getUserName());
+        response.setBirthDate(po.getBirthDate());
+        response.setBirthTime(po.getBirthTime());
+        response.setLunar(po.getLunarDate());
         response.setGanZhi(po.getGanZhi());
-        response.setWuXing(po.getWuXingAnalysis());
-        response.setWuXingLack(""); // 从五行分析中提取，这里简化处理
+        response.setWuXing(po.getWuXing());
+        response.setWuXingLack(po.getWuXingLack() != null ? po.getWuXingLack() : "无");
         response.setShengXiao(po.getShengXiao());
         response.setAiAnalysis(po.getAiAnalysis());
-        response.setCreateTime(po.getCreatedTime());
+        response.setCreateTime(po.getCreateTime());
         return response;
     }
     
     /**
-     * 解析时辰为小时
+     * 检查指定表是否存在
      */
-    private Integer parseTimeToHour(String birthTime) {
-        if (birthTime == null) return null;
-        
-        switch (birthTime) {
-            case "子时": return 0;
-            case "丑时": return 2;
-            case "寅时": return 4;
-            case "卯时": return 6;
-            case "辰时": return 8;
-            case "巳时": return 10;
-            case "午时": return 12;
-            case "未时": return 14;
-            case "申时": return 16;
-            case "酉时": return 18;
-            case "戌时": return 20;
-            case "亥时": return 22;
-            default: return 0;
-        }
-    }
-    
-    /**
-     * 将小时转换为时辰格式
-     */
-    private String formatHourToTime(Integer hour) {
-        if (hour == null) return "未知时辰";
-        
-        switch (hour) {
-            case 0: return "子时";
-            case 2: return "丑时";
-            case 4: return "寅时";
-            case 6: return "卯时";
-            case 8: return "辰时";
-            case 10: return "巳时";
-            case 12: return "午时";
-            case 14: return "未时";
-            case 16: return "申时";
-            case 18: return "酉时";
-            case 20: return "戌时";
-            case 22: return "亥时";
-            default: return "子时";
-        }
-    }
-    
-    /**
-     * 格式化农历显示
-     */
-    private String formatLunar(Integer year, Integer month, Integer day) {
-        if (year == null || month == null || day == null) {
-            return "农历信息未知";
-        }
-        
-        String[] lunarMonths = {"正月", "二月", "三月", "四月", "五月", "六月", 
-                               "七月", "八月", "九月", "十月", "十一月", "十二月"};
-        
-        String monthStr = month > 0 && month <= 12 ? lunarMonths[month - 1] : "未知月";
-        String dayStr = day < 10 ? "初" + day : 
-                       day < 20 ? "十" + (day - 10) : 
-                       day == 20 ? "二十" : "廿" + (day - 20);
-        
-        return String.format("农历%d年%s%s", year, monthStr, dayStr);
+    public boolean checkTableExists(String tableName) {
+        return fortuneRecordMapper.checkTableExists(tableName) > 0;
     }
 } 

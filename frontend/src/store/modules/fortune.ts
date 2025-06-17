@@ -44,6 +44,13 @@ export const useFortuneStore = defineStore('fortune', () => {
     
     loading.value = true
     try {
+      console.log('开始调用API，请求参数:', {
+        userId: userStore.getCurrentUserId,
+        userName: userName.value,
+        birthDate: birthDate.value,
+        birthTime: birthTime.value
+      })
+      
       const response = await fortuneApi.calculate({
         userId: userStore.getCurrentUserId,
         userName: userName.value,
@@ -51,12 +58,20 @@ export const useFortuneStore = defineStore('fortune', () => {
         birthTime: birthTime.value
       })
       
-      console.log('API响应:', response)
+      console.log('API响应详情:', JSON.stringify(response))
       
       // 检查响应是否成功
       if (response && response.code === 200 && response.data) {
         result.value = response.data
-        console.log('分析结果:', result.value)
+        console.log('设置结果对象成功:', JSON.stringify(result.value))
+        
+        // 额外保存到本地存储，确保页面跳转时数据不丢失
+        try {
+          uni.setStorageSync('lastFortuneResult', JSON.stringify(response.data))
+          console.log('分析结果已保存到本地存储')
+        } catch (e) {
+          console.error('保存分析结果到本地存储失败:', e)
+        }
         
         // 消耗分析次数
         userStore.consumeAnalysisCount()
@@ -68,7 +83,7 @@ export const useFortuneStore = defineStore('fortune', () => {
         throw new Error(response?.message || '分析失败')
       }
     } catch (error) {
-      console.error('分析失败:', error)
+      console.error('分析失败详情:', error)
       result.value = null
       uni.showToast({
         title: '分析失败，请重试',

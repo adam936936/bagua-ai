@@ -38,7 +38,7 @@
           @change="onTimeChange"
         >
           <view class="form-input picker-input">
-            {{ birthTime || '请选择出生时辰' }}
+            {{ displayBirthTime }}
           </view>
         </picker>
       </view>
@@ -90,6 +90,14 @@ const loading = computed(() => fortuneStore.loading)
 const isVip = computed(() => userStore.isVip)
 const remainingCount = computed(() => userStore.remainingAnalysisCount)
 
+// 用于显示的完整时辰（包括时间范围）
+const displayBirthTime = computed(() => {
+  if (timeIndex.value >= 0 && timeIndex.value < timeOptions.length) {
+    return timeOptions[timeIndex.value]
+  }
+  return birthTime.value || '请选择出生时辰'
+})
+
 // 最大日期（今天）
 const maxDate = ref('')
 
@@ -132,8 +140,10 @@ const onDateChange = (e: any) => {
 // 时辰选择
 const onTimeChange = (e: any) => {
   timeIndex.value = e.detail.value
-  birthTime.value = timeOptions[e.detail.value]
-  fortuneStore.birthTime = timeOptions[e.detail.value]
+  const fullTime = timeOptions[e.detail.value]
+  // 仅获取时辰部分，不包括括号内的时间范围
+  birthTime.value = fullTime.split(' ')[0]
+  fortuneStore.birthTime = birthTime.value
 }
 
 // 开始分析
@@ -168,19 +178,57 @@ const onCalculate = async () => {
       mask: true
     })
     
+    console.log('调用分析接口前的数据:', {
+      userName: fortuneStore.userName,
+      birthDate: fortuneStore.birthDate,
+      birthTime: fortuneStore.birthTime
+    })
+    
     // 调用分析接口
     await fortuneStore.doCalculate()
     
+    console.log('分析接口调用完成，结果:', fortuneStore.result)
+    
     // 检查分析结果
     if (fortuneStore.result) {
+      console.log('分析成功，准备跳转到结果页面')
       // 隐藏加载提示
       uni.hideLoading()
       
       // 分析成功，跳转到结果页面
       uni.navigateTo({
-        url: '/pages/result/result'
+        url: 'pages/result/result',
+        success: () => {
+          console.log('成功跳转到结果页面')
+        },
+        fail: (err) => {
+          console.error('跳转到结果页面失败:', err)
+          // 尝试备用跳转方式
+          setTimeout(() => {
+            console.log('尝试备用跳转方式')
+            uni.reLaunch({
+              url: '/pages/index/index',
+              success: () => {
+                setTimeout(() => {
+                  uni.navigateTo({
+                    url: '../result/result',
+                    fail: (err) => {
+                      console.error('备用跳转也失败:', err)
+                      uni.showModal({
+                        title: '提示',
+                        content: '分析成功，请手动前往结果页面查看',
+                        showCancel: false
+                      })
+                    }
+                  })
+                }, 500)
+              }
+            })
+          }, 100)
+        }
       })
     } else {
+      console.error('分析结果为空')
       // 隐藏加载提示
       uni.hideLoading()
       throw new Error('分析结果为空')

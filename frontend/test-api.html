@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>微信小程序API测试</title>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        button { padding: 10px 20px; margin: 5px; }
+        .result { background: #f5f5f5; padding: 10px; margin: 10px 0; }
+        pre { white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <h1>微信小程序API测试</h1>
+    
+    <div class="test-section">
+        <h3>命理计算测试</h3>
+        <button onclick="testCalculate()">测试命理计算</button>
+        <div id="calculate-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>今日运势测试</h3>
+        <button onclick="testTodayFortune()">测试今日运势</button>
+        <div id="fortune-result" class="result"></div>
+    </div>
+
+    <script>
+        const baseURL = 'http://localhost:8081/api';
+
+        async function apiRequest(url, options = {}) {
+            try {
+                const response = await fetch(baseURL + url, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    ...options
+                });
+                return await response.json();
+            } catch (error) {
+                console.error('API请求失败:', error);
+                throw error;
+            }
+        }
+
+        async function testCalculate() {
+            const resultDiv = document.getElementById('calculate-result');
+            resultDiv.innerHTML = '测试中...';
+            
+            try {
+                const result = await apiRequest('/fortune/calculate', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        name: '张三',
+                        birthDate: '2025-06-16',
+                        birthTime: '丑时',
+                        gender: 'male'
+                    })
+                });
+                
+                resultDiv.innerHTML = `
+                    <h4>API响应结构:</h4>
+                    <pre>${JSON.stringify(result, null, 2)}</pre>
+                    
+                    <h4>解析后的数据:</h4>
+                    ${result.success ? `
+                        <p><strong>姓名:</strong> ${result.data.userName}</p>
+                        <p><strong>农历:</strong> ${result.data.lunar}</p>
+                        <p><strong>生肖:</strong> ${result.data.shengXiao}</p>
+                        <p><strong>干支:</strong> ${result.data.ganZhi}</p>
+                        <p><strong>五行:</strong> ${result.data.wuXing}</p>
+                        <p><strong>AI分析:</strong> ${result.data.aiAnalysis.substring(0, 100)}...</p>
+                    ` : `<p style="color: red;">错误: ${result.message}</p>`}
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `<p style="color: red;">请求失败: ${error.message}</p>`;
+            }
+        }
+
+        async function testTodayFortune() {
+            const resultDiv = document.getElementById('fortune-result');
+            resultDiv.innerHTML = '测试中...';
+            
+            try {
+                const result = await apiRequest('/fortune/today-fortune');
+                
+                resultDiv.innerHTML = `
+                    <h4>API响应:</h4>
+                    <pre>${JSON.stringify(result, null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `<p style="color: red;">请求失败: ${error.message}</p>`;
+            }
+        }
+
+        // 页面加载时自动测试
+        window.onload = function() {
+            console.log('测试页面加载完成');
+        };
+    </script>
+</body>
+</html> 

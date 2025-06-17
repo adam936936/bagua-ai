@@ -1,8 +1,0 @@
-backend/src/main/resources/application-local-mysql.yml:    app-id: ${WECHAT_APP_ID:wxab173e904eb23fca}
-backend/src/main/resources/application-local-mysql.yml:    app-id: ${WECHAT_PAY_APP_ID:wxab173e904eb23fca}
-backend/src/main/resources/application-local-mysql.yml:    app-id: ${WECHAT_APP_ID:wxab173e904eb23fca}
-backend/src/main/resources/application-local-mysql.yml:    app-id: ${WECHAT_PAY_APP_ID:wxab173e904eb23fca}
-DEPLOYMENT_STATUS.md:- **AppID**: wxab173e904eb23fca
-PRODUCTION_SETUP.md:WECHAT_APP_ID=wx1234567890abcdef
-PRODUCTION_SETUP.md:WECHAT_PAY_APP_ID=wx1234567890abcdef
-PRODUCTION_SETUP.md:export WECHAT_APP_ID="wx1234567890abcdef"
