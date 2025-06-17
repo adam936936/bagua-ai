@@ -1,5 +1,11 @@
-# 使用OpenJDK官方镜像
-FROM openjdk:17-alpine
+# 使用Eclipse Temurin镜像
+FROM eclipse-temurin:17-jdk-alpine
+
+# 设置时区
+ENV TZ=Asia/Shanghai
+
+# 安装curl
+RUN apk add --no-cache curl
 
 # 设置工作目录
 WORKDIR /app

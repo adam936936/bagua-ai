@@ -1,9 +1,8 @@
-# 使用Amazon Corretto官方镜像（AWS维护的OpenJDK发行版）
+# 使用Amazon Corretto镜像
 FROM amazoncorretto:17-alpine
 
-# 设置时区和编码
+# 设置时区
 ENV TZ=Asia/Shanghai
-ENV LANG=C.UTF-8
 
 # 安装curl
 RUN apk add --no-cache curl

@@ -1,13 +1,23 @@
-# 使用本地构建的镜像（避免网络下载）
-FROM openjdk:17-jre-slim
+# 使用Ubuntu基础镜像，手动安装JDK
+FROM ubuntu:22.04
 
-# 安装必要工具（如果基础镜像支持）
-RUN apt-get update || true && apt-get install -y curl || true
+# 设置时区和环境变量
+ENV TZ=Asia/Shanghai
+ENV DEBIAN_FRONTEND=noninteractive
+
+# 安装OpenJDK 17和必要工具
+RUN apt-get update && \
+    apt-get install -y openjdk-17-jdk curl && \
+    rm -rf /var/lib/apt/lists/*
+
+# 设置JAVA_HOME
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+ENV PATH=$PATH:$JAVA_HOME/bin
 
 # 设置工作目录
 WORKDIR /app
 
-# 复制应用JAR文件
+# 复制JAR文件
 COPY target/*.jar app.jar
 
 # 暴露端口
@@ -21,4 +31,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
 ENV JAVA_OPTS="-Xms256m -Xmx512m"
 
 # 启动应用
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"] 
+ENTRYPOINT ["java", "-jar", "app.jar"] 
