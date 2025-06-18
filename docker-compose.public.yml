@@ -1,0 +1,129 @@
+services:
+  # MySQL数据库 - 公网版
+  mysql:
+    image: mysql:8.0
+    container_name: bagua-mysql-public
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-Fortune2025!Root}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-bagua_ai}
+      MYSQL_USER: ${MYSQL_USERNAME:-bagua_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-Fortune2025!User}
+      TZ: Asia/Shanghai
+    ports:
+      - "122.51.104.128:3306:3306"  # 绑定到公网IP
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./backend/complete-init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-Fortune2025!Root}"]
+      timeout: 20s
+      retries: 5
+      interval: 30s
+
+  # Redis缓存 - 公网版
+  redis:
+    image: redis:7-alpine
+    container_name: bagua-redis-public
+    restart: unless-stopped
+    ports:
+      - "122.51.104.128:6379:6379"  # 绑定到公网IP
+    volumes:
+      - redis_data:/data
+    environment:
+      TZ: Asia/Shanghai
+    command: redis-server --requirepass ${REDIS_PASSWORD:-Fortune2025!Redis}
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-Fortune2025!Redis}", "ping"]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+
+  # 后端应用 - 公网版
+  backend:
+    image: openjdk:17-jdk-slim
+    container_name: bagua-backend-public
+    restart: unless-stopped
+    ports:
+      - "122.51.104.128:8080:8080"  # 绑定到公网IP
+      - "122.51.104.128:8081:8081"  # 管理端口
+    volumes:
+      - ./backend/target:/app
+      - ./logs:/logs
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - TZ=Asia/Shanghai
+      # 数据库配置
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-bagua_ai}?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+      - SPRING_DATASOURCE_USERNAME=${MYSQL_USERNAME:-bagua_user}
+      - SPRING_DATASOURCE_PASSWORD=${MYSQL_PASSWORD:-Fortune2025!User}
+      # Redis配置
+      - SPRING_REDIS_HOST=redis
+      - SPRING_REDIS_PORT=6379
+      - SPRING_REDIS_PASSWORD=${REDIS_PASSWORD:-Fortune2025!Redis}
+      # AI服务配置
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-sk-test-key-for-production}
+      # 微信配置
+      - WECHAT_APP_ID=${WECHAT_APP_ID:-wx-your-app-id}
+      - WECHAT_APP_SECRET=${WECHAT_APP_SECRET:-your-app-secret}
+      # JWT配置
+      - JWT_SECRET=${JWT_SECRET:-Fortune2025JwtSecretKeyForProduction}
+      # 服务器配置
+      - SERVER_ADDRESS=0.0.0.0
+    command: >
+      sh -c "
+      cd /app && 
+      java -Xms512m -Xmx1024m -jar *.jar 
+      --server.port=8080
+      --server.address=0.0.0.0
+      "
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/api/actuator/health || exit 1"]
+      timeout: 30s
+      retries: 3
+      interval: 60s
+      start_period: 120s
+
+  # Nginx反向代理 - 公网版
+  nginx:
+    image: nginx:alpine
+    container_name: bagua-nginx-public
+    restart: unless-stopped
+    ports:
+      - "122.51.104.128:80:80"      # HTTP
+      - "122.51.104.128:443:443"    # HTTPS
+    volumes:
+      - ./nginx/nginx.public.conf:/etc/nginx/nginx.conf:ro
+      - ./logs/nginx:/var/log/nginx
+    depends_on:
+      - backend
+    command: |
+      sh -c "
+      echo 'events { worker_connections 1024; }
+      http {
+        upstream backend {
+          server backend:8080;
+        }
+        server {
+          listen 80;
+          server_name 122.51.104.128;
+          location / {
+            proxy_pass http://backend;
+            proxy_set_header Host \$$host;
+            proxy_set_header X-Real-IP \$$remote_addr;
+            proxy_set_header X-Forwarded-For \$$proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto \$$scheme;
+          }
+        }
+      }' > /etc/nginx/nginx.conf && nginx -g 'daemon off;'
+      "
+
+volumes:
+  mysql_data:
+  redis_data: 

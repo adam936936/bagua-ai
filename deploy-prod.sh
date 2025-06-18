@@ -56,7 +56,7 @@ mkdir -p logs uploads
 
 # 停止现有服务
 log_info "停止现有服务..."
-docker-compose down > /dev/null 2>&1 || true
+docker-compose down --remove-orphans > /dev/null 2>&1 || true
 
 # 清理旧数据（可选）
 read -p "是否清理旧数据？这将删除所有数据库数据 (y/N): " -n 1 -r
