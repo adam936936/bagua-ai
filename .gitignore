@@ -81,6 +81,9 @@ yarn.lock
 .env.development.local
 .env.test.local
 .env.production.local
+config/prod.env
+config/*.env
+!config/*.env.template
 
 # API密钥和敏感配置文件（仅忽略包含敏感信息的配置）
 **/application-secret.yml

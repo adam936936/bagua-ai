@@ -70,6 +70,12 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     docker volume rm bagua-ai_mysql_data bagua-ai_redis_data > /dev/null 2>&1 || true
 fi
 
+# 检查环境配置文件
+if [ ! -f "config/prod.env" ]; then
+    log_error "生产环境配置文件不存在: config/prod.env"
+    exit 1
+fi
+
 # 启动数据库服务
 log_info "启动数据库和缓存服务..."
 docker-compose -f docker-compose.public.yml --env-file config/prod.env up -d mysql redis

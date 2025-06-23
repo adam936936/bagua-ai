@@ -63,12 +63,15 @@ services:
       - SPRING_REDIS_PORT=6379
       - SPRING_REDIS_PASSWORD=${REDIS_PASSWORD:-Fortune2025!Redis}
       # AI服务配置
-      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-sk-test-key-for-production}
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+      - DEEPSEEK_API_URL=${DEEPSEEK_API_URL:-https://api.deepseek.com/v1/chat/completions}
+      - DEEPSEEK_MODEL=${DEEPSEEK_MODEL:-deepseek-chat}
       # 微信配置
-      - WECHAT_APP_ID=${WECHAT_APP_ID:-wx-your-app-id}
-      - WECHAT_APP_SECRET=${WECHAT_APP_SECRET:-your-app-secret}
+      - WECHAT_APP_ID=${WECHAT_APP_ID}
+      - WECHAT_APP_SECRET=${WECHAT_APP_SECRET}
       # JWT配置
-      - JWT_SECRET=${JWT_SECRET:-Fortune2025JwtSecretKeyForProduction}
+      - JWT_SECRET=${JWT_SECRET}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
       # 服务器配置
       - SERVER_ADDRESS=0.0.0.0
     command: >
@@ -101,6 +104,8 @@ services:
     volumes:
       - ./nginx/nginx.public.conf:/etc/nginx/nginx.conf:ro
       - ./logs/nginx:/var/log/nginx
+    environment:
+      - DOMAIN_NAME=${DOMAIN_NAME:-122.51.104.128}
     depends_on:
       - backend
     command: |
@@ -112,7 +117,7 @@ services:
         }
         server {
           listen 80;
-          server_name 122.51.104.128;
+          server_name '${DOMAIN_NAME:-122.51.104.128}';
           location / {
             proxy_pass http://backend;
             proxy_set_header Host \$$host;
