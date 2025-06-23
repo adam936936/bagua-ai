@@ -33,10 +33,16 @@ echo -e "${NC}"
 # 停止前端服务
 log_info "🛑 停止前端服务..."
 if docker ps | grep -q bagua-frontend-prod; then
+    log_info "停止运行中的前端容器..."
     docker stop bagua-frontend-prod
+    log_success "✅ 前端容器已停止"
+fi
+if docker ps -a | grep -q bagua-frontend-prod; then
+    log_info "删除前端容器..."
     docker rm bagua-frontend-prod
-    log_success "✅ 前端服务已停止"
-else
+    log_success "✅ 前端容器已删除"
+fi
+if ! docker ps -a | grep -q bagua-frontend-prod; then
     log_info "ℹ️ 前端服务未运行"
 fi
 

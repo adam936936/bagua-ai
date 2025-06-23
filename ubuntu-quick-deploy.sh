@@ -317,9 +317,16 @@ build_backend() {
 deploy_frontend() {
     log_deploy "🚀 部署前端服务..."
     
-    # 停止现有前端容器
-    docker stop bagua-frontend-prod 2>/dev/null || true
-    docker rm bagua-frontend-prod 2>/dev/null || true
+    # 停止现有前端容器（更安全的清理方式）
+    log_info "清理现有前端容器..."
+    if docker ps | grep -q bagua-frontend-prod; then
+        log_info "停止运行中的前端容器..."
+        docker stop bagua-frontend-prod
+    fi
+    if docker ps -a | grep -q bagua-frontend-prod; then
+        log_info "删除已存在的前端容器..."
+        docker rm bagua-frontend-prod
+    fi
     
     # 启动前端容器
     docker run -d \

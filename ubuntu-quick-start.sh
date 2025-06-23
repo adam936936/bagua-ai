@@ -29,6 +29,22 @@ log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
+# 通用容器清理函数
+cleanup_container() {
+    local container_name=$1
+    local service_name=$2
+    
+    if docker ps | grep -q "$container_name"; then
+        log_info "停止运行中的${service_name}容器..."
+        docker stop "$container_name" > /dev/null 2>&1
+    fi
+    
+    if docker ps -a | grep -q "$container_name"; then
+        log_info "删除已存在的${service_name}容器..."
+        docker rm "$container_name" > /dev/null 2>&1
+    fi
+}
+
 # 显示横幅
 echo -e "${CYAN}"
 echo "=================================================="
@@ -74,6 +90,17 @@ chmod 755 logs uploads
 # 停止现有服务
 log_info "🛑 停止现有服务..."
 docker-compose -f docker-compose.public.yml down --remove-orphans > /dev/null 2>&1 || true
+
+# 清理已存在的容器
+log_info "🧹 清理已存在的容器..."
+cleanup_container "bagua-frontend-prod" "前端"
+
+# 清理可能的后端容器冲突
+cleanup_container "bagua-backend-public" "后端"
+cleanup_container "bagua-mysql-public" "数据库"
+cleanup_container "bagua-redis-public" "Redis"
+
+log_success "✅ 容器清理完成"
 
 # 步骤1: 部署前端（如果有构建好的前端）
 if [ -d "frontend/dist" ] || [ -d "frontend/build" ]; then
