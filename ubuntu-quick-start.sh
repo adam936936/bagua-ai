@@ -128,13 +128,16 @@ server {
         access_log off;
     }
 
-    # API代理到后端
+    # API代理到后端（Linux环境使用172.17.0.1）
     location /api/ {
-        proxy_pass http://host.docker.internal:8080/api/;
+        proxy_pass http://172.17.0.1:8080/api/;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
     }
 
     # SPA路由支持

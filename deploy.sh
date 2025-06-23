@@ -25,13 +25,15 @@ echo -e "${NC}"
 echo -e "${BLUE}请选择操作:${NC}"
 echo "1) 完整部署 (首次部署推荐，包含环境安装和项目构建)"
 echo "2) 快速启动 (适用于已构建项目)"
-echo "3) 检查状态 (查看当前部署状态)"
-echo "4) 停止服务 (停止所有运行的服务)"
-echo "5) 查看部署指南"
-echo "6) 退出"
+echo "3) 只部署前端 (解决前端网络问题)"
+echo "4) 只部署后端 (数据库+API服务)"
+echo "5) 检查状态 (查看当前部署状态)"
+echo "6) 停止服务 (停止所有运行的服务)"
+echo "7) 查看部署指南"
+echo "8) 退出"
 echo ""
 
-read -p "请输入选择 (1-6): " choice
+read -p "请输入选择 (1-8): " choice
 
 case $choice in
     1)
@@ -43,14 +45,22 @@ case $choice in
         ./ubuntu-quick-start.sh
         ;;
     3)
+        echo -e "${GREEN}只部署前端...${NC}"
+        ./deploy-frontend-only.sh
+        ;;
+    4)
+        echo -e "${GREEN}只部署后端...${NC}"
+        ./deploy-backend-only.sh
+        ;;
+    5)
         echo -e "${GREEN}检查部署状态...${NC}"
         ./check-status.sh
         ;;
-    4)
+    6)
         echo -e "${GREEN}停止所有服务...${NC}"
         ./stop-all-services.sh
         ;;
-    5)
+    7)
         echo -e "${GREEN}打开部署指南...${NC}"
         if command -v less &> /dev/null; then
             less UBUNTU_DEPLOYMENT_GUIDE.md
@@ -60,7 +70,7 @@ case $choice in
             cat UBUNTU_DEPLOYMENT_GUIDE.md
         fi
         ;;
-    6)
+    8)
         echo "退出"
         exit 0
         ;;
