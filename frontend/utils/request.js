@@ -1,7 +1,9 @@
 /**
  * 请求工具类 - uni-app版本
  */
-const baseURL = 'http://localhost:8081/api'; // 修改为8081端口
+// const baseURL = 'http://localhost:8081/api'; // 修改为8081端口
+const baseURL = 'http://122.51.104.128:8888/api'
+
 
 const request = {
   /**

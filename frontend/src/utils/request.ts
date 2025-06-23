@@ -14,8 +14,8 @@ interface ApiResponse<T = any> {
 }
 
 class Request {
-  // 本地开发环境 - 用于前后端联调测试
-  private baseURL = 'http://localhost:8081/api'
+  // 生产环境 - 外网部署地址
+  private baseURL = 'http://122.51.104.128:8888/api'
   
   private getToken(): string {
     return uni.getStorageSync('token') || ''

@@ -111,9 +111,39 @@ INSERT IGNORE INTO `t_fortune_record` (`user_id`, `name`, `gender`, `birth_year`
 (2, '李四', 2, 1995, 8, 20, 14, '乙亥年 甲申月 丁卯日 丁未时', '猪', '五行分析：木火较旺，土金稍弱', 'AI分析：性格开朗，财运不错'),
 (3, '王五', 1, 1988, 12, 3, 8, '戊辰年 甲子月 庚申日 庚辰时', '龙', '五行分析：金土较强，木火稍弱', 'AI分析：稳重踏实，适合从商');
 
--- 创建性能优化索引
-CREATE INDEX IF NOT EXISTS idx_t_fortune_record_composite ON t_fortune_record(user_id, created_time DESC);
-CREATE INDEX IF NOT EXISTS idx_t_name_recommendations_composite ON t_name_recommendations(user_id, created_time DESC);
+-- 创建性能优化索引（如果不存在）
+-- 使用存储过程安全地创建索引
+DELIMITER //
+CREATE PROCEDURE CreateIndexIfNotExists()
+BEGIN
+    DECLARE index_exists INT DEFAULT 0;
+    
+    -- 检查并创建 t_fortune_record 的复合索引
+    SELECT COUNT(*) INTO index_exists 
+    FROM information_schema.statistics 
+    WHERE table_schema = DATABASE() 
+    AND table_name = 't_fortune_record' 
+    AND index_name = 'idx_t_fortune_record_composite';
+    
+    IF index_exists = 0 THEN
+        ALTER TABLE t_fortune_record ADD INDEX idx_t_fortune_record_composite (user_id, created_time DESC);
+    END IF;
+    
+    -- 检查并创建 t_name_recommendations 的复合索引
+    SELECT COUNT(*) INTO index_exists 
+    FROM information_schema.statistics 
+    WHERE table_schema = DATABASE() 
+    AND table_name = 't_name_recommendations' 
+    AND index_name = 'idx_t_name_recommendations_composite';
+    
+    IF index_exists = 0 THEN
+        ALTER TABLE t_name_recommendations ADD INDEX idx_t_name_recommendations_composite (user_id, created_time DESC);
+    END IF;
+END //
+DELIMITER ;
+
+CALL CreateIndexIfNotExists();
+DROP PROCEDURE CreateIndexIfNotExists;
 
 -- 显示创建的表
 SHOW TABLES;
