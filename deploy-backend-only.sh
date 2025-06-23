@@ -99,7 +99,7 @@ docker-compose -f docker-compose.public.yml --env-file config/prod.env up -d bac
 # 等待后端启动
 log_info "⏳ 等待后端服务启动..."
 for i in {1..60}; do
-    if curl -s http://localhost:8080/api/actuator/health > /dev/null 2>&1; then
+    if curl -s http://localhost:8081/actuator/health > /dev/null 2>&1; then
         log_success "✅ 后端服务启动成功"
         break
     fi
@@ -114,7 +114,7 @@ done
 
 # 验证后端服务
 log_info "🔍 验证后端服务..."
-if curl -s http://localhost:8080/api/actuator/health | grep -q "UP"; then
+if curl -s http://localhost:8081/actuator/health | grep -q "UP"; then
     log_success "✅ 后端服务验证通过"
 else
     log_error "❌ 后端服务验证失败"
@@ -140,7 +140,7 @@ echo "- 停止后端服务: docker-compose -f docker-compose.public.yml down"
 echo "- 重新启动: ./deploy-backend-only.sh"
 echo ""
 echo -e "${CYAN}🧪 测试命令:${NC}"
-echo "- 后端健康检查: curl http://localhost:8080/api/actuator/health"
+echo "- 后端健康检查: curl http://localhost:8081/actuator/health"
 echo "- 测试运势API: curl -X POST http://localhost:8080/api/fortune/calculate -H 'Content-Type: application/json' -d '{\"name\":\"测试\",\"birthDate\":\"1990-01-01\",\"birthTime\":\"子时\",\"gender\":\"male\"}'"
 echo ""
 echo -e "${YELLOW}⚠️ 注意:${NC}"

@@ -66,12 +66,13 @@ fi
 # 检查后端服务
 log_info "⚙️ 检查后端服务..."
 if docker ps | grep -q bagua-backend; then
-    if curl -s http://localhost:8080/api/actuator/health > /dev/null 2>&1; then
+    if curl -s http://localhost:8081/actuator/health > /dev/null 2>&1; then
         log_success "✅ 后端服务正常运行"
-        echo "   访问地址: http://localhost:8080"
+        echo "   API地址: http://localhost:8080"
+        echo "   管理地址: http://localhost:8081"
         
         # 获取健康检查详情
-        HEALTH_STATUS=$(curl -s http://localhost:8080/api/actuator/health | grep -o '"status":"[^"]*"' | cut -d'"' -f4)
+        HEALTH_STATUS=$(curl -s http://localhost:8081/actuator/health | grep -o '"status":"[^"]*"' | cut -d'"' -f4)
         echo "   健康状态: $HEALTH_STATUS"
     else
         log_warning "⚠️ 后端容器运行但健康检查失败"
@@ -134,7 +135,7 @@ echo "# 前端健康检查"
 echo "curl http://localhost/health"
 echo ""
 echo "# 后端健康检查"
-echo "curl http://localhost:8080/api/actuator/health"
+echo "curl http://localhost:8081/actuator/health"
 echo ""
 echo "# 测试运势API"
 echo "curl -X POST http://localhost:8080/api/fortune/calculate -H 'Content-Type: application/json' -d '{\"name\":\"测试\",\"birthDate\":\"1990-01-01\",\"birthTime\":\"子时\",\"gender\":\"male\"}'"
