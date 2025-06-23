@@ -103,34 +103,15 @@ services:
     restart: unless-stopped
     ports:
       - "80:80"      # HTTP
-      - "443:443"    # HTTPS
+      - "8081:8081"  # 管理端口
     volumes:
-      - ./nginx/nginx.public.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/nginx.public-http.conf:/etc/nginx/nginx.conf:ro
       - ./logs/nginx:/var/log/nginx
+      - ./frontend/dist:/usr/share/nginx/html:ro
     environment:
       - DOMAIN_NAME=${DOMAIN_NAME:-122.51.104.128}
     depends_on:
       - backend
-    command: |
-      sh -c "
-      echo 'events { worker_connections 1024; }
-      http {
-        upstream backend {
-          server backend:8080;
-        }
-        server {
-          listen 80;
-          server_name '${DOMAIN_NAME:-122.51.104.128}';
-          location / {
-            proxy_pass http://backend;
-            proxy_set_header Host \$$host;
-            proxy_set_header X-Real-IP \$$remote_addr;
-            proxy_set_header X-Forwarded-For \$$proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto \$$scheme;
-          }
-        }
-      }' > /etc/nginx/nginx.conf && nginx -g 'daemon off;'
-      "
 
 volumes:
   mysql_data:
