@@ -112,20 +112,22 @@ test_api "命理计算" "$API_URL/fortune/calculate" "POST" '{
     "gender": "male"
 }'
 
-# 5. 测试八字分析接口
-test_api "八字分析" "$API_URL/fortune/bazi" "POST" '{
+# 5. 测试八字分析接口（使用正确的calculate端点）
+test_api "八字分析" "$API_URL/fortune/calculate" "POST" '{
     "name": "张三",
     "birthDate": "1995-05-15",
     "birthTime": "14:30",
     "gender": "male"
 }'
 
-# 6. 测试姓名推荐接口
-test_api "姓名推荐" "$API_URL/fortune/names" "POST" '{
+# 6. 测试姓名推荐接口（使用正确的recommend-names端点）
+test_api "姓名推荐" "$API_URL/fortune/recommend-names" "POST" '{
     "surname": "李",
-    "gender": "female",
-    "birthDate": "1992-08-20",
-    "birthTime": "10:15"
+    "gender": 0,
+    "birthYear": 1992,
+    "birthMonth": 8,
+    "birthDay": 20,
+    "birthHour": 10
 }'
 
 # 7. 测试简单接口

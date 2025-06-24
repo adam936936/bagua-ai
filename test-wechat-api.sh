@@ -59,19 +59,21 @@ test_api "命理计算" "/fortune/calculate" "POST" '{
     "gender": "male"
 }'
 
-# 6. 姓名推荐
-test_api "姓名推荐" "/fortune/names" "POST" '{
+# 6. 姓名推荐（使用正确的端点和参数格式）
+test_api "姓名推荐" "/fortune/recommend-names" "POST" '{
     "surname": "李",
-    "gender": "female",
-    "birthDate": "1995-05-15",
-    "birthTime": "14:30"
+    "gender": 0,
+    "birthYear": 1995,
+    "birthMonth": 5,
+    "birthDay": 15,
+    "birthHour": 14
 }'
 
 # 7. 用户历史记录
-test_api "用户历史记录" "/fortune/history/test_user" "GET"
+test_api "用户历史记录" "/fortune/history/1" "GET"
 
-# 8. 八字分析
-test_api "八字分析" "/fortune/bazi" "POST" '{
+# 8. 八字分析（使用正确的calculate端点）
+test_api "八字分析" "/fortune/calculate" "POST" '{
     "name": "王五",
     "birthDate": "1988-12-25",
     "birthTime": "10:15",
