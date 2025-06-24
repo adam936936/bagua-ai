@@ -6,7 +6,7 @@ services:
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-Fortune2025!Root}
-      MYSQL_DATABASE: ${MYSQL_DATABASE:-bagua_ai}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-fortune_db}
       MYSQL_USER: ${MYSQL_USERNAME:-bagua_user}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-Fortune2025!User}
       TZ: Asia/Shanghai
@@ -55,7 +55,7 @@ services:
       - SPRING_PROFILES_ACTIVE=prod
       - TZ=Asia/Shanghai
       # 数据库配置
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-bagua_ai}?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-fortune_db}?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
       - SPRING_DATASOURCE_USERNAME=${MYSQL_USERNAME:-bagua_user}
       - SPRING_DATASOURCE_PASSWORD=${MYSQL_PASSWORD:-Fortune2025!User}
       # Redis配置
